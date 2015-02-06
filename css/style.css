@@ -213,6 +213,7 @@ vertical-align: top;
 	}
 
 .transport-options .btn{
+	cursor:pointer;
 	background:#555	;
 	width:40%;
 	margin-right:2%;

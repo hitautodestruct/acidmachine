@@ -29,20 +29,36 @@ var ui = {
 		});
 
 		//Create Knobs
-		$(function() {
-       		$(".dial").knob({
-       			'min':0,
-       			'max':127,
-       			'angleOffset':-125,
-       			'angleArc':250,
-       			'width':48,
-       			'height':48,
-       			'thickness':0.7,
-       			'displayInput':false,
-       			'bgColor':'#aaaaaa',	
-       			'fgColor':'#333333'
-       		});
-    	});
+   		$(".dial").knob({
+   			'min':0,
+   			'max':127,
+   			'angleOffset':-125,
+   			'angleArc':250,
+   			'width':48,
+   			'height':48,
+   			'thickness':0.7,
+   			'displayInput':false,
+   			'bgColor':'#aaaaaa',	
+   			'fgColor':'#333333',
+
+   			'change' : function(v){
+   				var value = v;
+
+   				//Get the input name (contains instrument name and control name)
+   				var inputName = this.$.context.name;
+
+   				inputName = inputName.split('_');
+
+   				var instrumentName = inputName[0];
+   				var controlName = inputName[1];
+
+   				app.setControlKnob(instrumentName, controlName, value);
+   				
+   			}
+   			
+
+   		});
+
 
 		//Step Up
 		$('.js-synth-step-up').click(function(){
@@ -126,7 +142,8 @@ var ui = {
    			console.log(app.frequencies[instrumentName][ui.patternID[instrumentName]]);
 
     	}); //End Note Clicked
-	
+
+		
 
 	},
 
@@ -167,6 +184,8 @@ var ui = {
 			if(randomNote){
 				app.notes[instrument][ui.patternID[instrument]][i] = randomNote;
 				app.frequencies[instrument][ui.patternID[instrument]][i] = app.getFrequency(randomNote+noteOctave);	
+
+				$('#r' + (i+1) + 'c1').val(randomNote+noteOctave);
 			}
 
 		}
@@ -174,6 +193,7 @@ var ui = {
 		//Highlight the correct note at the current step
 		var currentStep = parseInt($('#' + instrument + '_step').html());
 		ui.updateStepValue(instrument, ui.patternID[instrument], currentStep);
+
 
 		console.log(app.notes[instrument][ui.patternID[instrument]]);
 		console.log(app.frequencies[instrument][ui.patternID[instrument]]);

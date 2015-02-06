@@ -6,12 +6,11 @@ var app = {
 	frequency: 100,
 	volume: 0.08,
 	waveform: 'square',
-	octave: 5,
+	octave: 2,
 	detunePercentage: 0,
+	filter: null,
 	keyCode: 1,
 	keyDown: false,
-	soundPlaying: false,
-	keyboardPlaying: [],
 	sequencePlaying: false,
 	currentCell: '0-1',
 	patternLength: 16,
@@ -31,6 +30,12 @@ var app = {
 
 		//Create Context
 		app.context = new (window.AudioContext || window.webkitAudioContext)();
+
+		//Create Filters
+		app.filter = app.context.createBiquadFilter();
+		app.filter.type = 'lowpass'; 
+		app.filter.frequency.value = 10000;
+		app.filter.Q.value = 8;
 
 		app.notes['synth1'] = [];
 		app.frequencies['synth1'] = [];
@@ -138,7 +143,7 @@ var app = {
 		noteFreq['f#2'] = 92.50;
 		noteFreq['g2']  = 98.00;
 
-		return noteFreq[note];
+		return noteFreq[note] * app.octave;
 
 	},
 
@@ -153,8 +158,10 @@ var app = {
 				app.oscillator[instrument] = app.context.createOscillator();
 				app.gainNode = app.context.createGain();
 
+				app.oscillator[instrument].connect(app.filter);
+
 				//Connect oscillator to gainNode to speakers
-				app.oscillator[instrument].connect(app.gainNode);
+				app.filter.connect(app.gainNode);
 				app.gainNode.connect(app.context.destination);
 
 				//Osc settings
@@ -166,6 +173,7 @@ var app = {
 				app.oscillator[instrument].start();
 
 				//console.log('Playing ' + freq);
+				//console.log(app.oscillator);
 			
 		}
 
@@ -182,8 +190,9 @@ var app = {
 			
 			if(app.oscillator[instrument]){
 
-					app.oscillator[instrument].disconnect(app.gainNode);
-					app.gainNode.connect(app.context.destination);
+					app.oscillator[instrument].disconnect(app.filter);
+					app.filter.disconnect(app.gainNode);
+					//app.gainNode.connect(app.context.destination);
 
 					//console.log('Stopping ' + freq)
 					app.oscillator[instrument].stop();
@@ -212,6 +221,30 @@ var app = {
 	setOctave: function(){
 
 		app.octave = $('#select_octave').val();
+
+	},
+
+
+	//----------------------------------------------------
+
+
+	setControlKnob: function(instrument, controlName, value){
+		console.log('Instrument: ' + instrument);
+		console.log('Control: ' + controlName);
+		console.log('Value: ' + value);
+		console.log('-------------');
+		
+		if(controlName == 'tune'){
+			app.detunePercentage = value;
+		}
+
+		if(controlName == 'cutoff'){
+			 app.filter.frequency.value = value * 100;
+		}
+
+		if(controlName == 'reso'){
+			app.filter.Q.value = value / 4;
+		}
 
 	},
 

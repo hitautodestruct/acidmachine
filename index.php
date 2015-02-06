@@ -44,32 +44,32 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 							<div class="col-xs-2">
 								Tune
-								<input type="text" value="64" class="dial">
+								<input type="text" value="64" class="dial" name="synth1_tune">
 							</div>
 
 							<div class="col-xs-2">
 								Cutoff
-								<input type="text" value="64" class="dial">
+								<input type="text" value="127" class="dial" name="synth1_cutoff">
 							</div>
 
 							<div class="col-xs-2">
 								Reso
-								<input type="text" value="64" class="dial">
+								<input type="text" value="16" class="dial" name="synth1_reso">
 							</div>
 
 							<div class="col-xs-2">
 								Env.Mod
-								<input type="text" value="64" class="dial">
+								<input type="text" value="64" class="dial" name="synth1_envmod">
 							</div>
 
 							<div class="col-xs-2">
 								Decay
-								<input type="text" value="0" class="dial">
+								<input type="text" value="0" class="dial" name="synth1_decay">
 							</div>
 
 							<div class="col-xs-2">
 								Accent
-								<input type="text" value="0" class="dial">
+								<input type="text" value="0" class="dial" name="synth1_accent">
 							</div>
 
 						</div>
@@ -127,6 +127,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 		<!--Note Storage Table-->
 		<div class="row" style="margin-top:32px;">
+			<div class="col-xs-2"></div>
 			<div class="col-xs-8">
 				<table class="channel-container">
 				
