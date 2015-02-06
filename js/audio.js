@@ -15,10 +15,12 @@ var app = {
 	sequencePlaying: false,
 	currentCell: '0-1',
 	patternLength: 16,
+	patternCount: 8,
 	rowSkip: 1, //Rows to jump after adding a note
 	lastFrequency: [],
 	notes:[], //To store patterns
 	frequencies:[], //To store frequencies
+	availableNotes: ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'],
 
 
 
@@ -34,11 +36,14 @@ var app = {
 		app.frequencies['synth1'] = [];
 
 		
-		app.oscillator[0] = [];
-		app.oscillator[1] = null;
-		app.oscillator[2] = null;
-		app.oscillator[3] = null;
-		app.oscillator[4] = null;
+		app.oscillator = [];
+		app.oscillator['synth1'] = null;
+
+		//Create the empty patterns for each intrument
+		for(var i=1; i<=app.patternCount; i++ ){
+			app.notes['synth1'][i] = new Array(app.patternLength);
+			app.frequencies['synth1'][i] = new Array(app.patternLength);
+		}
 		
 
 	},
@@ -141,29 +146,26 @@ var app = {
 	//----------------------------------------------------
 
 
-	playFrequency: function(freq){
+	playFrequency: function(instrument, freq){
 
 		if(!isNaN(freq)){
 
-
-
-				app.oscillator[col] = app.context.createOscillator();
+				app.oscillator[instrument] = app.context.createOscillator();
 				app.gainNode = app.context.createGain();
 
 				//Connect oscillator to gainNode to speakers
-				app.oscillator[col].connect(app.gainNode);
+				app.oscillator[instrument].connect(app.gainNode);
 				app.gainNode.connect(app.context.destination);
 
 				//Osc settings
-				app.frequency[col] = freq;
+				app.frequency[instrument] = freq;
 				app.gainNode.gain.value = app.volume;
-				app.oscillator[col].type = app.waveform;
-				app.oscillator[col].frequency.value = freq; // value in hertz
-				app.oscillator[col].detune.value = app.detunePercentage; // value in cents
-				app.oscillator[col].start();
+				app.oscillator[instrument].type = app.waveform;
+				app.oscillator[instrument].frequency.value = freq; // value in hertz
+				app.oscillator[instrument].detune.value = app.detunePercentage; // value in cents
+				app.oscillator[instrument].start();
 
 				//console.log('Playing ' + freq);
-
 			
 		}
 
@@ -173,19 +175,19 @@ var app = {
 	//----------------------------------------------------
 
 
-	stopFrequency: function(freq){
+	stopFrequency: function(instrument,freq){
 
 
 		if(!isNaN(freq)){
 			
-			if(app.oscillator[col]){
+			if(app.oscillator[instrument]){
 
-					app.oscillator[col].disconnect(app.gainNode);
+					app.oscillator[instrument].disconnect(app.gainNode);
 					app.gainNode.connect(app.context.destination);
 
 					//console.log('Stopping ' + freq)
-					app.oscillator[col].stop();
-					delete app.oscillator[col];
+					app.oscillator[instrument].stop();
+					delete app.oscillator[instrument];
 
 			}
 
@@ -225,37 +227,39 @@ var app = {
 		}
 
 		app.sequencePlaying = true;
-		var speed = 100;
+		var speed =100;
 		var i = 0;
 
 		//Play a row, then call function again
 		function nextRow() {
 
-			i++;
+			var previousFreq = app.frequencies['synth1'][1][i-1];
+			var currentFreq = app.frequencies['synth1'][1][i];
 
 		    //Check if sequence has been stopped
 		    if(!app.sequencePlaying){
-
-		    	for(var col=1; col<=4; col++){
-		    		app.stopFrequency(lastFrequency[col]);
-		    		lastFrequency[col] = false;
+		    	if(previousFreq){
+		    		app.stopFrequency('synth1', previousFreq);
+		    		return;
 		    	}
-		    	return;	
 		    } 
-			
 
 	    	//Stop previous note 
-		    if(app.frequencies['synth1'][1][i-1]){
-		    		app.stopFrequency(app.frequencies['synth1'][1][i-1]);
+		    if(previousFreq){
+		    	console.log('Stopping ' + previousFreq );
+		    	app.stopFrequency('synth1', previousFreq);
 		    }
 
-	    	if(app.frequencies['synth1'][1][i]){
-	    		app.playFrequency(frequency);
+		    //Play current note
+	    	if(currentFreq){
+	    		console.log('Playing ' + currentFreq );
+	    		app.playFrequency('synth1', currentFreq);
 	    	}
 
 
 		    //Next row
 		    if(i<app.patternLength) {
+		    	i++;
 		        setTimeout(function(){
 		        	nextRow();	
 		        }, speed);
@@ -283,12 +287,12 @@ var app = {
 		app.sequencePlaying = false;
 		//console.log('stopped');
 
-		for(var i=1;i<=4;i++){
-			if(app.oscillator[i]){
-				app.oscillator[i].stop();
-			}
-			delete app.oscillator[i];
-		}	
+		//Stop Synth1
+		if(app.oscillator['synth1']){
+			app.oscillator['synth1'].stop();
+			delete app.oscillator['synth1'];
+		}
+
 
 	},
 

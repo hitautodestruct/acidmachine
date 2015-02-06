@@ -79,8 +79,8 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 					<div class="col-xs-2 current-step-container">
 						Current Step
 						<div class="synth-lcd ib" id="synth1_step">1</div><div class="ib">
-							<div class="btn-synth btn-small" id="synth1_step_up">UP</div>
-							<div class="btn-synth btn-small" id="synth1_step_down">DN</div>
+							<div class="btn-synth btn-small js-synth-step-up"  data-instrument-name="synth1">UP</div>
+							<div class="btn-synth btn-small js-synth-step-down"  data-instrument-name="synth1">DN</div>
 						</div>
 					</div>
 
@@ -89,7 +89,12 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 				<!--Keyboard Row-->
 				<div class="row keyboard-row">
 						
-					<div class="col-xs-2"></div>
+					<div class="col-xs-2">
+						Randomize
+						<div class="btn-synth btn-randomize" data-instrument-name="synth1">
+
+						</div>
+					</div>
 					
 					<div class="col-xs-8">
 
@@ -103,7 +108,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 									$btnBlack = ' btn-note-black ';
 								}
 								
-								?><div class="btn-synth btn-note <?=$btnBlack;?> ib" id="synth1_<?=$notes[$i];?>"><?=$notes[$i];?></div><?php
+								?><div class="btn-synth btn-note <?=$btnBlack;?> ib" data-instrument-name="synth1" id="synth1_<?=strtolower($notes[$i]);?>"><?=$notes[$i];?></div><?php
 
 							endfor; ?>
 						</div>

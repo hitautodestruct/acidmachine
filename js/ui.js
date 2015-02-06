@@ -1,11 +1,14 @@
 var ui = {
 
+	patternID: [],
+
 	init: function(){
 
-		var currentStep,clickedNote,octave,patternID;
+		var currentStep,clickedNote,octave;
 
 		octave = 1;
-		patternID = 1;
+
+		ui.patternID['synth1'] = 1;
 
 		//Play Button
 		$('#play_button').click(function(){ 
@@ -41,60 +44,88 @@ var ui = {
        		});
     	});
 
-		//Step Up / Down
-		$('#synth1_step_up').click(function(){
-			currentStep = parseInt($('#synth1_step').html());
+		//Step Up
+		$('.js-synth-step-up').click(function(){
+
+			var instrumentName = $(this).data('instrument-name');
+
+			currentStep = parseInt($('#' + instrumentName + '_step').html());
+
 			if( (currentStep) < 16 ){
-				$('#synth1_step').html(currentStep + 1);
+				$('#' + instrumentName + '_step').html(currentStep + 1);
 			}
-			currentStep = parseInt($('#synth1_step').html());
+			currentStep = parseInt($('#' + instrumentName + '_step').html());
 
 			//Update the selected key for this step
-			ui.updateStepValue('synth1', patternID, currentStep);
+			ui.updateStepValue(instrumentName, ui.patternID[instrumentName], currentStep);
 
 		});
 
-		$('#synth1_step_down').click(function(){
-			currentStep = parseInt($('#synth1_step').html());
+		//Step Down
+		$('.js-synth-step-down').click(function(){
+
+			var instrumentName = $(this).data('instrument-name');
+
+			currentStep = parseInt($('#' + instrumentName + '_step').html());
+
 			if( (currentStep) > 1 ){
-				$('#synth1_step').html(currentStep - 1);
+				$('#' + instrumentName + '_step').html(currentStep - 1);
 			}
-			currentStep = parseInt($('#synth1_step').html());
+			currentStep = parseInt($('#' + instrumentName + '_step').html());
 
 			//Update the selected key for this step
-			ui.updateStepValue('synth1', patternID, currentStep);
+			ui.updateStepValue(instrumentName, ui.patternID[instrumentName], currentStep);
 		});
+
+
+
+		//Randomize
+		$('.btn-randomize').mousedown(function(){
+
+			ui.randomize( $(this).data('instrument-name') );
+
+			$(this).addClass('btn-note-highlight');
+
+		});
+
+		$('.btn-randomize').mouseup(function(){
+			$(this).removeClass('btn-note-highlight');
+		});
+
 
 		//Note Clicked
     	$('.btn-note').click(function(){
+
+    		var instrumentName = $(this).data('instrument-name');
 
     		//Highlight Note
     		$('.btn-note').not(this).removeClass('btn-note-highlight');
     		$(this).toggleClass('btn-note-highlight');
 
-    		//Add note to table at current step
-    		clickedNote = $(this).html() + octave;
-   			currentStep = $('#synth1_step').html()
-   			$('#r' + currentStep + 'c1').val(clickedNote);
+   			currentStep = $('#' + instrumentName + '_step').html()
 
-   			//Create note array for this pattern if it does not exist
-   			if(typeof app.notes['synth1'][patternID] == 'undefined' || !(app.notes['synth1'][patternID] instanceof Array) ){
-   				app.notes['synth1'][patternID] = new Array(app.patternLength);
-   			}
+    		//Check note is highlighted
+    		if( $(this).hasClass('btn-note-highlight') ){
 
-   			//Create frequency array for this pattern if it does not exist
-   			if(typeof app.frequencies['synth1'][patternID] == 'undefined' || !(app.frequencies['synth1'][patternID] instanceof Array) ){
-   				app.frequencies['synth1'][patternID] = new Array(app.patternLength);
-   			}
+    			//Add note to table at current step
+	    		clickedNote = $(this).html() + octave;
+	   			$('#r' + currentStep + 'c1').val(clickedNote);
 
-   			//Add note and frequency to arrays
-   			app.notes['synth1'][patternID][currentStep-1] = $(this).html();
-   			app.frequencies['synth1'][patternID][currentStep-1] = app.getFrequency(clickedNote.toLowerCase());
+	   			//Add note and frequency to arrays
+	   			app.notes[instrumentName][ui.patternID[instrumentName]][currentStep-1] = $(this).html();
+	   			app.frequencies[instrumentName][ui.patternID[instrumentName]][currentStep-1] = app.getFrequency(clickedNote.toLowerCase());
 
-   			
+    		} else {
+    			//Note was un-highlighted - Clear array element for note and frequency
+    			$('#r' + currentStep + 'c1').val('');
+	   			app.notes[instrumentName][ui.patternID[instrumentName]][currentStep-1] = null;
+	   			app.frequencies[instrumentName][ui.patternID[instrumentName]][currentStep-1] = null;
+    		}
 
+   			console.log(app.notes[instrumentName][ui.patternID[instrumentName]]);
+   			console.log(app.frequencies[instrumentName][ui.patternID[instrumentName]]);
 
-    	});
+    	}); //End Note Clicked
 	
 
 	},
@@ -110,9 +141,9 @@ var ui = {
 		if(highlightNote){
 			
 			highlightNote = highlightNote.replace('#','\\#');
-
 			$('.btn-note').removeClass('btn-note-highlight');
    			$('#' + instrument + '_' + highlightNote).toggleClass('btn-note-highlight');
+
 		} else {
 			$('.btn-note').removeClass('btn-note-highlight');
 		}
@@ -120,6 +151,34 @@ var ui = {
 	},
 
 	//----------------------------------------------------
+
+	//Randomize the notes in an instrument
+	randomize: function(instrument){
+
+		//Loop through steps in pattern and create random note for each one
+		for(var i=0; i<app.patternLength; i++){
+
+			var noteOctave = 1;
+			
+			//Get a random number to select a note ( higher number used than available notes so that we sometimes get a blank note)
+			var randomNumber = Math.floor( Math.random() * 18);
+			var randomNote = app.availableNotes[randomNumber];
+
+			if(randomNote){
+				app.notes[instrument][ui.patternID[instrument]][i] = randomNote;
+				app.frequencies[instrument][ui.patternID[instrument]][i] = app.getFrequency(randomNote+noteOctave);	
+			}
+
+		}
+
+		//Highlight the correct note at the current step
+		var currentStep = parseInt($('#' + instrument + '_step').html());
+		ui.updateStepValue(instrument, ui.patternID[instrument], currentStep);
+
+		console.log(app.notes[instrument][ui.patternID[instrument]]);
+		console.log(app.frequencies[instrument][ui.patternID[instrument]]);
+
+	}
 
 }; //End ui
 
