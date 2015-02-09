@@ -1,5 +1,6 @@
 var app = {
 
+	tempo: 130,
 	context: null,
 	oscillator: [],
 	gainNode: null,
@@ -19,6 +20,7 @@ var app = {
 	lastFrequency: [],
 	notes:[], //To store patterns
 	drums:[], //To store drum patterns
+	mute:[],
 	frequencies:[], //To store frequencies
 	availableNotes: ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'],
 	samples:[],
@@ -35,6 +37,8 @@ var app = {
 
 		//Volumes
 		app.volume['synth1'] = 0.4;
+		app.mute['synth1'] = false;
+		app.mute['drum1']  = false;
 
 		//Create Filters
 		app.filter = app.context.createBiquadFilter();
@@ -382,7 +386,7 @@ var app = {
 		}
 
 		app.sequencePlaying = true;
-		var speed =100;
+		var speed = 60000 / app.tempo / 4
 		var i = 0;
 
 		//Play a row, then call function again
@@ -412,8 +416,10 @@ var app = {
 
 		    //Play current note
 	    	if(currentFreq){
-	    		console.log('Playing ' + currentFreq );
-	    		app.playFrequency('synth1', currentFreq);
+	    		if(!app.mute['synth1']){
+	    			console.log('Playing ' + currentFreq );
+	    			app.playFrequency('synth1', currentFreq);
+	    		}
 	    	}
 
 	    	//Drums
@@ -426,11 +432,14 @@ var app = {
 				}
 			}
 
-
-			//Loop through samples
-			for(key in app.samples){
-				playSample(key);
+			//Play drum sounds if not muted
+			if(!app.mute['drum1']){
+				//Loop through samples
+				for(key in app.samples){
+					playSample(key);
+				}	
 			}
+			
 
 
 

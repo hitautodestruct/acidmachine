@@ -51,6 +51,26 @@ var ui = {
 			$(this).removeClass('btn-pushed');
 		});
 
+		//Temp mute drums function
+		$('#muteDrums').click(function(){
+			$('#muteDrums').toggleClass('btn-note-highlight');
+			if(!app.mute['drum1']){
+				app.mute['drum1'] = true;
+			} else {
+				app.mute['drum1'] = false;
+			}
+		});
+
+		//Temp mute synth function
+		$('#muteSynth').click(function(){
+			$('#muteSynth').toggleClass('btn-note-highlight');
+			if(!app.mute['synth1']){
+				app.mute['synth1'] = true;
+			} else {
+				app.mute['synth1'] = false;
+			}
+		});
+
 		//Create Knobs
    		$(".dial").knob({
    			'min':0,

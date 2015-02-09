@@ -18,8 +18,11 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 			<div class="col-xs-2 options transport-options container-padding">
 				<div class="btn ib" id="play_button">Play</div><div class="btn ib" id="stop_button">Stop</div>
 			</div>
-			<div class="col-xs-8 title-block">
-				ACID MACHINE
+			<div class="col-xs-2 title-block">
+				<div class="" id="synth1_step" style="margin:0 !important;">130</div>
+			</div>
+			<div class="col-xs-6 title-block">
+				<span class="pull-right" style="padding-right:32px;">ACID MACHINE</span>
 			</div>
 		</div>
 
@@ -27,7 +30,8 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 			
 			<!--Synth 1 Pattern Selector-->
 			<div class="col-xs-2">
-				
+				<div id="muteDrums" class="btn-synth">Mute Drums</div>
+				<div id="muteSynth" class="btn-synth" style="margin-top:4px;">Mute Synth</div>
 			</div>
 
 			<!--Synth 1 Main-->
