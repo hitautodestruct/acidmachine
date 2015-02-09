@@ -4,9 +4,9 @@ var app = {
 	oscillator: [],
 	gainNode: null,
 	frequency: 100,
-	volume: 0.08,
+	volume: [],
 	waveform: 'square',
-	octave: 2,
+	octave: 1,
 	detunePercentage: 0,
 	filter: null,
 	keyCode: 1,
@@ -18,8 +18,10 @@ var app = {
 	rowSkip: 1, //Rows to jump after adding a note
 	lastFrequency: [],
 	notes:[], //To store patterns
+	drums:[], //To store drum patterns
 	frequencies:[], //To store frequencies
 	availableNotes: ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'],
+	samples:[],
 
 
 
@@ -31,6 +33,9 @@ var app = {
 		//Create Context
 		app.context = new (window.AudioContext || window.webkitAudioContext)();
 
+		//Volumes
+		app.volume['synth1'] = 0.4;
+
 		//Create Filters
 		app.filter = app.context.createBiquadFilter();
 		app.filter.type = 'lowpass'; 
@@ -40,6 +45,14 @@ var app = {
 		app.notes['synth1'] = [];
 		app.frequencies['synth1'] = [];
 
+		//Set up the drums array
+		app.drums['drum1'] = [];
+		app.drums['drum1']['kick'] = [];
+		app.drums['drum1']['sd'] = [];
+		app.drums['drum1']['ch'] = [];
+		app.drums['drum1']['oh'] = [];
+		app.drums['drum1']['rs'] = [];
+
 		
 		app.oscillator = [];
 		app.oscillator['synth1'] = null;
@@ -48,7 +61,56 @@ var app = {
 		for(var i=1; i<=app.patternCount; i++ ){
 			app.notes['synth1'][i] = new Array(app.patternLength);
 			app.frequencies['synth1'][i] = new Array(app.patternLength);
+
+			//Set up drum patterns
+			app.drums['drum1']['kick'][i] = new Array(app.patternLength);
+			app.drums['drum1']['sd'][i] = new Array(app.patternLength);
+			app.drums['drum1']['ch'][i] = new Array(app.patternLength);
+			app.drums['drum1']['oh'][i] = new Array(app.patternLength);
+			app.drums['drum1']['rs'][i] = new Array(app.patternLength);
 		}
+
+		app.loadSamples();
+
+		/*
+		//Keyboard drum testing
+		function onKeyDown(e){
+			switch (e.keyCode) {
+				// X
+				case 88:
+					var playSound = app.context.createBufferSource(); // Declare a New Sound
+					playSound.buffer = app.samples['sd']; // Attatch our Audio Data as it's Buffer
+					playSound.connect(app.context.destination);  // Link the Sound to the Output
+					playSound.start(0); // Play the Sound Immediately
+				break;
+
+				case 90:
+					var playSound = app.context.createBufferSource(); // Declare a New Sound
+					playSound.buffer = app.samples['kick']; // Attatch our Audio Data as it's Buffer
+					playSound.connect(app.context.destination);  // Link the Sound to the Output
+					playSound.start(0); // Play the Sound Immediately
+				break;
+			}
+ 		}
+ 		window.addEventListener("keydown",onKeyDown);
+ 		*/
+
+ 		//Test drum pattern
+ 		app.drums['drum1']['kick'][1][0] = true;
+ 		app.drums['drum1']['kick'][1][4] = true;
+ 		app.drums['drum1']['kick'][1][8] = true;
+ 		app.drums['drum1']['kick'][1][12] = true;
+
+ 		app.drums['drum1']['ch'][1][2] = true;
+ 		app.drums['drum1']['ch'][1][6] = true;
+ 		app.drums['drum1']['ch'][1][10] = true;
+ 		app.drums['drum1']['ch'][1][14] = true;
+
+ 		app.drums['drum1']['rs'][1][13] = true;
+ 		app.drums['drum1']['rs'][1][15] = true;
+
+ 		app.drums['drum1']['sd'][1][4] = true;
+ 		app.drums['drum1']['sd'][1][12] = true;
 		
 
 	},
@@ -158,15 +220,28 @@ var app = {
 				app.oscillator[instrument] = app.context.createOscillator();
 				app.gainNode = app.context.createGain();
 
+				var delay = app.context.createDelay();
+
+				//Filter
 				app.oscillator[instrument].connect(app.filter);
 
-				//Connect oscillator to gainNode to speakers
+				
+			    delay.delayTime.value = 0.4;
+			    app.gainNode.gain.value = 0.1;
+
+			    //Connect delay to gainNode - gainNode to Delay (create feedback)
+			    //delay.connect(app.gainNode);
+			    //app.gainNode.connect(delay);
+
+			    //app.filter.connect(delay);
+
 				app.filter.connect(app.gainNode);
 				app.gainNode.connect(app.context.destination);
+				//delay.connect(app.context.destination);
 
 				//Osc settings
 				app.frequency[instrument] = freq;
-				app.gainNode.gain.value = app.volume;
+				app.gainNode.gain.value = app.volume[instrument];
 				app.oscillator[instrument].type = app.waveform;
 				app.oscillator[instrument].frequency.value = freq; // value in hertz
 				app.oscillator[instrument].detune.value = app.detunePercentage; // value in cents
@@ -234,20 +309,67 @@ var app = {
 		console.log('Value: ' + value);
 		console.log('-------------');
 		
+		//Tuning
 		if(controlName == 'tune'){
 			app.detunePercentage = value;
 		}
 
+		//Cutoff frequency
 		if(controlName == 'cutoff'){
 			 app.filter.frequency.value = value * 100;
 		}
 
+		//Resonance
 		if(controlName == 'reso'){
 			app.filter.Q.value = value / 4;
 		}
 
+		if(controlName == 'envmod'){
+
+		}
+
 	},
 
+
+	//----------------------------------------------------
+
+	
+	loadSamples: function(){
+
+		var samplePaths = [];
+		samplePaths['kick']   = 'bd01.wav';
+		samplePaths['sd']   = 'sd10.wav';
+		samplePaths['ch']   = 'hh01.wav';
+		samplePaths['oh']   = 'oh01.wav';
+		samplePaths['rs']   = 'rs01.wav';
+
+		loadSample = function(key, path){
+
+				console.log('Loading key: ' + key + ' - sample: ' + path)
+
+				app.samples[key]; // Create the Sound 
+				var getSound = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
+				getSound.open("GET", "samples/909/" + path, true); // Path to Audio File
+				getSound.responseType = "arraybuffer"; // Read as Binary Data
+				getSound.onload = function() {
+					app.context.decodeAudioData(getSound.response, function(buffer){
+						app.samples[key] = buffer; // Decode the Audio Data and Store it in a Variable
+					});
+				}
+				getSound.send(); // Send the Request and Load the File
+
+		}
+
+
+		//Loop through sample paths
+		for(key in samplePaths){
+			loadSample(key, samplePaths[key]);
+		}
+
+		
+
+	},
+	
 
 	//----------------------------------------------------
 
@@ -266,7 +388,12 @@ var app = {
 		//Play a row, then call function again
 		function nextRow() {
 
-			var previousFreq = app.frequencies['synth1'][1][i-1];
+			if(i>0){
+				var previousFreq = app.frequencies['synth1'][1][i-1];
+			} else {
+				var previousFreq = app.frequencies['synth1'][1][app.patternLength-1];
+			}
+			
 			var currentFreq = app.frequencies['synth1'][1][i];
 
 		    //Check if sequence has been stopped
@@ -289,9 +416,31 @@ var app = {
 	    		app.playFrequency('synth1', currentFreq);
 	    	}
 
+	    	//Drums
+			playSample = function(key){
+				if( app.drums['drum1'][key][1][i] ) {
+					var playSound = app.context.createBufferSource(); // Declare a New Sound
+					playSound.buffer = app.samples[key]; // Attatch our Audio Data as it's Buffer
+					playSound.connect(app.context.destination);  // Link the Sound to the Output
+					playSound.start(0); // Play the Sound Immediately
+				}
+			}
+
+
+			//Loop through samples
+			for(key in app.samples){
+				playSample(key);
+			}
+
+
+
+
+
+
+
 
 		    //Next row
-		    if(i<app.patternLength) {
+		    if(i<(app.patternLength-1)) {
 		    	i++;
 		        setTimeout(function(){
 		        	nextRow();	

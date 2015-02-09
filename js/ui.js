@@ -10,6 +10,29 @@ var ui = {
 
 		ui.patternID['synth1'] = 1;
 
+		//Key Press - Play note - if not already playing 
+		window.addEventListener("keydown", function(e){			
+			
+			var keyCode = (typeof e.which == "number") ? e.which : e.keyCode;
+
+			if(keyCode == 32){ //Space Bar - Start/Stop
+				if(app.sequencePlaying){
+					app.stopSequence();
+					$('#play_button').removeClass('btn-pushed');
+					$('#stop_button').addClass('btn-pushed');
+					setTimeout(function(){ 
+						$('#stop_button').removeClass('btn-pushed');
+					}, 100);
+
+				}  else {
+					$('#play_button').addClass('btn-pushed');
+					app.playSequence();
+				}
+			}
+
+
+		});
+
 		//Play Button
 		$('#play_button').click(function(){ 
 			app.playSequence();
@@ -169,36 +192,72 @@ var ui = {
 
 	//----------------------------------------------------
 
-	//Randomize the notes in an instrument
+	//Randomize the notes in an instrument (Randomizes in blocks of 4, randomly decides whether to use current or previous block)
 	randomize: function(instrument){
 
-		//Loop through steps in pattern and create random note for each one
-		for(var i=0; i<app.patternLength; i++){
+		//Split pattern length into 4 chunks
+		var chunks = [];
+		var patternChunkLength = app.patternLength / 4;
+		var randomNotes = [];
+		var noteOctave = 1;
 
-			var noteOctave = 1;
-			
-			//Get a random number to select a note ( higher number used than available notes so that we sometimes get a blank note)
-			var randomNumber = Math.floor( Math.random() * 18);
-			var randomNote = app.availableNotes[randomNumber];
+		//Loop through the 4 chunks
+		for(var chunk=0; chunk<4; chunk++){
 
-			if(randomNote){
-				app.notes[instrument][ui.patternID[instrument]][i] = randomNote;
-				app.frequencies[instrument][ui.patternID[instrument]][i] = app.getFrequency(randomNote+noteOctave);	
+			chunks[chunk] = []; 
 
-				$('#r' + (i+1) + 'c1').val(randomNote+noteOctave);
+			//Loop through the steps in this chunk
+			for(var i=0; i<patternChunkLength; i++){
+
+				//Get a random number to select a note ( higher number used than available notes so that we sometimes get a blank note)
+				var randomNumber = Math.floor( Math.random() * 18);
+				var randomNote = app.availableNotes[randomNumber];
+
+				if(randomNote){
+					chunks[chunk][i] = randomNote;
+				} else {
+					chunks[chunk][i] = null;
+				}
+
 			}
 
+			//Randomly decide if this or the previous chunk should be added to the random array 
+			var selectedChunk = chunk;
+			
+			if(chunk>0){
+				if( Math.floor( Math.random() *2 ) == 1){
+					selectedChunk = chunk-1;
+				}
+			}
+
+			//Join this chunk to the main array
+			randomNotes = randomNotes.concat(chunks[selectedChunk]);
+
 		}
+
+
+		//Loop through each step and set the note
+		for(i=0; i<app.patternLength; i++){
+			if(randomNotes[i]){
+				app.notes[instrument][ui.patternID[instrument]][i] = randomNotes[i];
+				app.frequencies[instrument][ui.patternID[instrument]][i] = app.getFrequency(randomNotes[i]+noteOctave);	
+				$('#r' + (i+1) + 'c1').val(randomNotes[i]+noteOctave);
+			} else {
+				app.notes[instrument][ui.patternID[instrument]][i] = null;
+				app.frequencies[instrument][ui.patternID[instrument]][i] = null;	
+				$('#r' + (i+1) + 'c1').val(null);
+			}
+		}
+		
 
 		//Highlight the correct note at the current step
 		var currentStep = parseInt($('#' + instrument + '_step').html());
 		ui.updateStepValue(instrument, ui.patternID[instrument], currentStep);
 
-
 		console.log(app.notes[instrument][ui.patternID[instrument]]);
 		console.log(app.frequencies[instrument][ui.patternID[instrument]]);
 
-	}
+	} //End randomize
 
 }; //End ui
 

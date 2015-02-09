@@ -12,12 +12,14 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 	<div class="container">
 
-		<div class="row">
-			<div class="col-xs-3 options transport-options container-padding">
+		<div class="row top-row">
+			
+						
+			<div class="col-xs-2 options transport-options container-padding">
 				<div class="btn ib" id="play_button">Play</div><div class="btn ib" id="stop_button">Stop</div>
 			</div>
-			<div class="col-xs-9">
-				
+			<div class="col-xs-8 title-block">
+				ACID MACHINE
 			</div>
 		</div>
 
