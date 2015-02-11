@@ -13,6 +13,16 @@ zoom:1;
 vertical-align: top;
 }
 
+.instrument-shadow{
+	box-shadow: 6px 6px 3px #222222;
+}
+
+.drum1-main{
+	background:#EEE;
+	height:64px;
+	border-radius:2px;
+}
+
 .synth-main{
 	background: #cccccc;
 	background: -moz-linear-gradient(left,  #cccccc 0%, #eeeeee 50%, #eeeeee 51%, #cccccc 100%);
@@ -24,8 +34,6 @@ vertical-align: top;
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cccccc', endColorstr='#cccccc',GradientType=1 );
 
 	border-radius:2px;
-
-	box-shadow: 6px 6px 3px #222222;
 }
 
 .synth-controls-row{
@@ -290,4 +298,36 @@ vertical-align: top;
 
 .js-channel-notes tr{
 	
+}
+
+.tiny-text {
+	font-size:11px;
+}
+
+.spacer-vertical{
+	height:12px;
+}
+
+.toggle-switch-bg{
+	background:#222;
+	width:40px;
+	height:20px;
+	border-right:1px solid #ddd;
+	border-bottom:1px solid #ddd;
+	cursor: pointer;
+}
+
+.toggle-switch-h{
+	background:#666;
+	height:100%;
+	width:20px;
+	float:left;
+	text-align:center;
+}
+
+.waveform-toggle-container{
+	text-align:center;
+}
+.toggle-switch-h-right{
+	float:right !important;
 }

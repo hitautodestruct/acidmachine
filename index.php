@@ -19,7 +19,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 				<div class="btn ib" id="play_button">Play</div><div class="btn ib" id="stop_button">Stop</div>
 			</div>
 			<div class="col-xs-2 title-block">
-				<div class="" id="synth1_step" style="margin:0 !important;">130</div>
+				<div class="" style="margin:0 !important;">130</div>
 			</div>
 			<div class="col-xs-6 title-block">
 				<span class="pull-right" style="padding-right:32px;">ACID MACHINE</span>
@@ -30,18 +30,27 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 			
 			<!--Synth 1 Pattern Selector-->
 			<div class="col-xs-2">
-				<div id="muteDrums" class="btn-synth">Mute Drums</div>
-				<div id="muteSynth" class="btn-synth" style="margin-top:4px;">Mute Synth</div>
+				<div id="muteDrums" class="btn-synth">Mute Drums <span class="tiny-text">[D]</span></div>
+				<div id="muteSynth" class="btn-synth" style="margin-top:4px;">Mute Synth <span class="tiny-text">[S]</span></div>
 			</div>
 
 			<!--Synth 1 Main-->
-			<div class="col-xs-8 synth-main">
+			<div class="col-xs-8 synth-main instrument-shadow">
 				
 				<!--Controls Row-->
 				<div class="row synth-controls-row">
 					
-					<div class="col-xs-2 border-right">
+					<div class="col-xs-2 border-right waveform-toggle-container">
 						Waveform
+
+						<br>
+						
+						<span class="ib">Sw</span>
+						<div class="toggle-switch-bg js-waveform-toggle ib" data-instrument-name="synth1">
+							<div class="toggle-switch-h"></div>
+						</div>
+						<span class="ib">Sq</span>
+
 					</div>
 
 					<div class="col-xs-8 border-right knobs">
@@ -129,6 +138,14 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 			</div><!--End Synth 1 Main-->
 
 		</div><!--End Row-->
+
+		<div class="spacer-vertical"></div>
+
+		<div class="row">
+			<div class="col-xs-2"></div>
+			<div class="col-xs-8 drum1-main instrument-shadow">Drums Here</div>
+			<div class="col-xs-2"></div>
+		</div>
 
 
 		<!--Note Storage Table-->

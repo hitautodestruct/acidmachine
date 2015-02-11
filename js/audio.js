@@ -6,7 +6,7 @@ var app = {
 	gainNode: null,
 	frequency: 100,
 	volume: [],
-	waveform: 'square',
+	waveform: [],
 	octave: 1,
 	detunePercentage: 0,
 	filter: null,
@@ -61,6 +61,9 @@ var app = {
 		app.oscillator = [];
 		app.oscillator['synth1'] = null;
 
+		//Setup waveforms array
+		app.waveform['synth1'] = 'sawtooth';
+
 		//Create the empty patterns for each intrument
 		for(var i=1; i<=app.patternCount; i++ ){
 			app.notes['synth1'][i] = new Array(app.patternLength);
@@ -105,13 +108,13 @@ var app = {
  		app.drums['drum1']['kick'][1][8] = true;
  		app.drums['drum1']['kick'][1][12] = true;
 
- 		app.drums['drum1']['ch'][1][2] = true;
- 		app.drums['drum1']['ch'][1][6] = true;
- 		app.drums['drum1']['ch'][1][10] = true;
- 		app.drums['drum1']['ch'][1][14] = true;
+ 		//app.drums['drum1']['ch'][1][2] = true;
+ 		//app.drums['drum1']['ch'][1][6] = true;
+ 		//app.drums['drum1']['ch'][1][10] = true;
+ 		//app.drums['drum1']['ch'][1][14] = true;
 
- 		app.drums['drum1']['rs'][1][13] = true;
- 		app.drums['drum1']['rs'][1][15] = true;
+ 		//app.drums['drum1']['rs'][1][13] = true;
+ 		//app.drums['drum1']['rs'][1][15] = true;
 
  		app.drums['drum1']['sd'][1][4] = true;
  		app.drums['drum1']['sd'][1][12] = true;
@@ -246,7 +249,7 @@ var app = {
 				//Osc settings
 				app.frequency[instrument] = freq;
 				app.gainNode.gain.value = app.volume[instrument];
-				app.oscillator[instrument].type = app.waveform;
+				app.oscillator[instrument].type = app.waveform[instrument];
 				app.oscillator[instrument].frequency.value = freq; // value in hertz
 				app.oscillator[instrument].detune.value = app.detunePercentage; // value in cents
 				app.oscillator[instrument].start();
@@ -287,9 +290,13 @@ var app = {
 	//----------------------------------------------------
 
 
-	setWaveform: function(waveform){
+	toggleWaveform: function(instrument){
 
-		app.waveform = waveform;
+		if(app.waveform[instrument] === 'sawtooth'){
+			app.waveform[instrument] = 'square';
+		} else {
+			app.waveform[instrument] = 'sawtooth';
+		}
 
 	},
 

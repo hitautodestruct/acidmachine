@@ -16,6 +16,9 @@ var ui = {
 			var keyCode = (typeof e.which == "number") ? e.which : e.keyCode;
 
 			if(keyCode == 32){ //Space Bar - Start/Stop
+
+				e.preventDefault();
+
 				if(app.sequencePlaying){
 					app.stopSequence();
 					$('#play_button').removeClass('btn-pushed');
@@ -51,25 +54,60 @@ var ui = {
 			$(this).removeClass('btn-pushed');
 		});
 
+
+		//Temp Mute functions------
+
 		//Temp mute drums function
-		$('#muteDrums').click(function(){
+		function muteDrums(){
 			$('#muteDrums').toggleClass('btn-note-highlight');
 			if(!app.mute['drum1']){
 				app.mute['drum1'] = true;
 			} else {
 				app.mute['drum1'] = false;
 			}
+		}
+
+		$('#muteDrums').click(function(){
+			muteDrums();
 		});
 
 		//Temp mute synth function
-		$('#muteSynth').click(function(){
+		function muteSynth(){
 			$('#muteSynth').toggleClass('btn-note-highlight');
 			if(!app.mute['synth1']){
 				app.mute['synth1'] = true;
 			} else {
 				app.mute['synth1'] = false;
 			}
+		}
+
+		$('#muteSynth').click(function(){
+			muteSynth();
 		});
+
+		//Keys to mute
+		function onKeyDown(e){
+			switch (e.keyCode) {
+				//D
+				case 68:
+					muteDrums();
+				break;
+
+				//S
+				case 83:
+					muteSynth();
+				break;
+
+				//R - randomise
+				case 82:
+					ui.randomize('synth1');
+				break;
+			}
+		}
+		window.addEventListener("keydown",onKeyDown);
+
+		//End mute functions
+
 
 		//Create Knobs
    		$(".dial").knob({
@@ -149,6 +187,14 @@ var ui = {
 
 		$('.btn-randomize').mouseup(function(){
 			$(this).removeClass('btn-note-highlight');
+		});
+
+
+		//Waveform selection
+		$('.js-waveform-toggle').click(function(){
+			$(this).children('.toggle-switch-h').toggleClass('toggle-switch-h-right');
+			var instrumentName = $(this).data('instrument-name');
+			app.toggleWaveform(instrumentName);
 		});
 
 
