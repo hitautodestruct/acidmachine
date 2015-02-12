@@ -6,7 +6,7 @@ var ui = {
 
 		var currentStep,clickedNote,octave;
 
-		octave = 1;
+		octave = app.octave;
 
 		ui.patternID['synth1'] = 1;
 
@@ -34,7 +34,24 @@ var ui = {
 			}
 
 
-		});
+			//Temp mute keys---
+			//D
+			if(keyCode == 68){
+				muteDrums();
+			}
+			//S
+			if(keyCode == 83){
+				muteSynth();
+			}
+			//R - randomise
+			if(keyCode == 82){
+				ui.randomize('synth1');
+			}
+			//---
+
+
+		}); //End Keyboard Listener
+
 
 		//Play Button
 		$('#play_button').click(function(){ 
@@ -84,28 +101,6 @@ var ui = {
 		$('#muteSynth').click(function(){
 			muteSynth();
 		});
-
-		//Keys to mute
-		function onKeyDown(e){
-			switch (e.keyCode) {
-				//D
-				case 68:
-					muteDrums();
-				break;
-
-				//S
-				case 83:
-					muteSynth();
-				break;
-
-				//R - randomise
-				case 82:
-					ui.randomize('synth1');
-				break;
-			}
-		}
-		window.addEventListener("keydown",onKeyDown);
-
 		//End mute functions
 
 
@@ -199,12 +194,20 @@ var ui = {
 
 
 		//Note Clicked
-    	$('.btn-note').click(function(){
+    	$('.js-note').click(function(){
 
     		var instrumentName = $(this).data('instrument-name');
+    		var noteOctave = app.octave;
+
+    		//Check if one of the octave buttons is pressed
+    		if( $('.js-octave-btn-up').hasClass('btn-note-highlight') ){
+    			noteOctave = noteOctave + 1;
+    		} else if ( $('.js-octave-btn-down').hasClass('btn-note-highlight') ) {
+    			noteOctave = noteOctave - 1;
+    		}
 
     		//Highlight Note
-    		$('.btn-note').not(this).removeClass('btn-note-highlight');
+    		$('.js-note').not(this).removeClass('btn-note-highlight');
     		$(this).toggleClass('btn-note-highlight');
 
    			currentStep = $('#' + instrumentName + '_step').html()
@@ -213,11 +216,11 @@ var ui = {
     		if( $(this).hasClass('btn-note-highlight') ){
 
     			//Add note to table at current step
-	    		clickedNote = $(this).html() + octave;
+	    		clickedNote = $(this).html() + noteOctave;
 	   			$('#r' + currentStep + 'c1').val(clickedNote);
 
 	   			//Add note and frequency to arrays
-	   			app.notes[instrumentName][ui.patternID[instrumentName]][currentStep-1] = $(this).html();
+	   			app.notes[instrumentName][ui.patternID[instrumentName]][currentStep-1] = $(this).data('note').toLowerCase() + noteOctave;
 	   			app.frequencies[instrumentName][ui.patternID[instrumentName]][currentStep-1] = app.getFrequency(clickedNote.toLowerCase());
 
     		} else {
@@ -232,6 +235,52 @@ var ui = {
 
     	}); //End Note Clicked
 
+
+		//Octave up / down buttons
+		$('.js-octave-btn').click(function(){
+			//Remove highlight from other button when clicked
+			$('.js-octave-btn').not(this).removeClass('btn-note-highlight');
+			
+			//Add highlight to this button
+			$(this).toggleClass('btn-note-highlight');
+
+			//Re-set the note and frequency for this step
+			var instrumentName = $(this).data('instrument-name');
+			var currentStep = $('#' + instrumentName + '_step').html()
+			var oldNote = app.notes[instrumentName][ui.patternID[instrumentName]][currentStep-1];
+			oldNote = oldNote.slice(0, -1); //Remove the octave from the old note
+			
+			//Check if up or down was pressed
+			if( $(this).data('direction') === 'up') {
+				
+				if( $(this).hasClass('btn-note-highlight') ){
+					var noteOctave = app.octave + 1;
+				} else {
+					var noteOctave = app.octave;
+				}
+
+			} else {
+
+				if( $(this).hasClass('btn-note-highlight') ){
+					var noteOctave = app.octave - 1;
+				} else {
+					var noteOctave = app.octave;
+				}
+
+			}
+			
+			//Note with new octave number tagged onto end
+			var newNote = oldNote + noteOctave;
+
+			//Set note and frequency
+   			app.notes[instrumentName][ui.patternID[instrumentName]][currentStep-1] = newNote;
+   			app.frequencies[instrumentName][ui.patternID[instrumentName]][currentStep-1] = app.getFrequency(newNote);
+
+   			//Update note table
+   			$('#r' + currentStep + 'c1').val(newNote);
+
+		}); //End octave up/down buttons
+
 		
 
 	},
@@ -245,13 +294,31 @@ var ui = {
 
 		//If there is a note - highlight it
 		if(highlightNote){
+
+			//Get the octave of this note (last char)
+			var noteOctave = highlightNote.slice(-1);
+
+			//If octave is different than main octave - highlight the relevant octave button
+			if(noteOctave > app.octave){
+				$('.js-octave-btn').removeClass('btn-note-highlight');
+				$('.js-octave-btn-up').addClass('btn-note-highlight');
+			} else if(noteOctave < app.octave){
+				$('.js-octave-btn').removeClass('btn-note-highlight');
+				$('.js-octave-btn-down').addClass('btn-note-highlight');
+			} else {
+				$('.js-octave-btn').removeClass('btn-note-highlight');
+			}
+
+			//Remove octave from end
+			highlightNote = highlightNote.slice(0, -1); 
 			
 			highlightNote = highlightNote.replace('#','\\#');
-			$('.btn-note').removeClass('btn-note-highlight');
+			$('.js-note').removeClass('btn-note-highlight');
    			$('#' + instrument + '_' + highlightNote).toggleClass('btn-note-highlight');
 
 		} else {
-			$('.btn-note').removeClass('btn-note-highlight');
+			$('.js-note').removeClass('btn-note-highlight');
+			$('.js-octave-btn').removeClass('btn-note-highlight');
 		}
 
 	},
@@ -265,7 +332,7 @@ var ui = {
 		var chunks = [];
 		var patternChunkLength = app.patternLength / 4;
 		var randomNotes = [];
-		var noteOctave = 1;
+		var noteOctave = app.octave;
 
 		//Loop through the 4 chunks
 		for(var chunk=0; chunk<4; chunk++){
@@ -305,7 +372,18 @@ var ui = {
 		//Loop through each step and set the note
 		for(i=0; i<app.patternLength; i++){
 			if(randomNotes[i]){
-				app.notes[instrument][ui.patternID[instrument]][i] = randomNotes[i];
+
+				//Decide whether to set the octave up or down
+				var octaveRand = Math.floor( Math.random() * 10);
+				if( octaveRand == 1){
+					noteOctave = app.octave + 1;
+				} else if ( octaveRand == 2 ){
+					noteOctave = app.octave - 1;
+				} else {
+					noteOctave = app.octave;
+				}
+
+				app.notes[instrument][ui.patternID[instrument]][i] = randomNotes[i] + noteOctave;
 				app.frequencies[instrument][ui.patternID[instrument]][i] = app.getFrequency(randomNotes[i]+noteOctave);	
 				$('#r' + (i+1) + 'c1').val(randomNotes[i]+noteOctave);
 			} else {

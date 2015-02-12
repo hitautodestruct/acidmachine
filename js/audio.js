@@ -1,13 +1,14 @@
 var app = {
 
 	tempo: 130,
+	octave: 1,
+
 	context: null,
 	oscillator: [],
 	gainNode: null,
 	frequency: 100,
 	volume: [],
 	waveform: [],
-	octave: 1,
 	detunePercentage: 0,
 	filter: null,
 	keyCode: 1,
@@ -79,45 +80,22 @@ var app = {
 
 		app.loadSamples();
 
-		/*
-		//Keyboard drum testing
-		function onKeyDown(e){
-			switch (e.keyCode) {
-				// X
-				case 88:
-					var playSound = app.context.createBufferSource(); // Declare a New Sound
-					playSound.buffer = app.samples['sd']; // Attatch our Audio Data as it's Buffer
-					playSound.connect(app.context.destination);  // Link the Sound to the Output
-					playSound.start(0); // Play the Sound Immediately
-				break;
-
-				case 90:
-					var playSound = app.context.createBufferSource(); // Declare a New Sound
-					playSound.buffer = app.samples['kick']; // Attatch our Audio Data as it's Buffer
-					playSound.connect(app.context.destination);  // Link the Sound to the Output
-					playSound.start(0); // Play the Sound Immediately
-				break;
-			}
- 		}
- 		window.addEventListener("keydown",onKeyDown);
- 		*/
-
  		//Test drum pattern
- 		app.drums['drum1']['kick'][1][0] = true;
- 		app.drums['drum1']['kick'][1][4] = true;
- 		app.drums['drum1']['kick'][1][8] = true;
- 		app.drums['drum1']['kick'][1][12] = true;
+ 		//app.drums['drum1']['kick'][1][0] = true;
+ 		//app.drums['drum1']['kick'][1][4] = true;
+ 		//app.drums['drum1']['kick'][1][8] = true;
+ 		//app.drums['drum1']['kick'][1][12] = true;
 
- 		//app.drums['drum1']['ch'][1][2] = true;
- 		//app.drums['drum1']['ch'][1][6] = true;
- 		//app.drums['drum1']['ch'][1][10] = true;
- 		//app.drums['drum1']['ch'][1][14] = true;
+ 		app.drums['drum1']['ch'][1][2] = true;
+ 		app.drums['drum1']['ch'][1][6] = true;
+ 		app.drums['drum1']['ch'][1][10] = true;
+ 		app.drums['drum1']['ch'][1][14] = true;
 
  		//app.drums['drum1']['rs'][1][13] = true;
  		//app.drums['drum1']['rs'][1][15] = true;
 
- 		app.drums['drum1']['sd'][1][4] = true;
- 		app.drums['drum1']['sd'][1][12] = true;
+ 		//app.drums['drum1']['sd'][1][4] = true;
+ 		//app.drums['drum1']['sd'][1][12] = true;
 		
 
 	},
@@ -191,6 +169,7 @@ var app = {
 		noteFreq['a0']  = 27.50;
 		noteFreq['a#0'] = 29.14;
 		noteFreq['b0']  = 30.87;
+
 		noteFreq['c1']  = 32.70;
 		noteFreq['c#1'] = 34.65;
 		noteFreq['d1']  = 36.71;
@@ -203,6 +182,7 @@ var app = {
 		noteFreq['a1']  = 55.00; 
 		noteFreq['a#1'] = 58.27;
 		noteFreq['b1']  = 61.74;
+
 		noteFreq['c2']  = 65.41;
 		noteFreq['c#2'] = 69.30;
 		noteFreq['d2']  = 73.42;
@@ -212,7 +192,7 @@ var app = {
 		noteFreq['f#2'] = 92.50;
 		noteFreq['g2']  = 98.00;
 
-		return noteFreq[note] * app.octave;
+		return noteFreq[note];
 
 	},
 
@@ -411,8 +391,8 @@ var app = {
 		    if(!app.sequencePlaying){
 		    	if(previousFreq){
 		    		app.stopFrequency('synth1', previousFreq);
-		    		return;
 		    	}
+		    	return;
 		    } 
 
 	    	//Stop previous note 
@@ -490,6 +470,8 @@ var app = {
 			app.oscillator['synth1'].stop();
 			delete app.oscillator['synth1'];
 		}
+
+		//Stop Drums
 
 
 	},

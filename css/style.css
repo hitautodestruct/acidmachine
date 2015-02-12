@@ -36,6 +36,11 @@ vertical-align: top;
 	border-radius:2px;
 }
 
+.synth-label-bg{
+	background:#666;
+	color:white;
+}
+
 .synth-controls-row{
 	padding-top:4px;
 	position:relative;
@@ -51,7 +56,7 @@ vertical-align: top;
 }
 
 .keyboard-row{
-	margin-top:10px;
+	margin-top:4px;
 	margin-bottom:10px;
 }
 
@@ -69,7 +74,11 @@ vertical-align: top;
 }
 
 .keyboard-container{
-	text-align:center;
+	text-align:left;
+}
+
+.synth-octave-container{
+	padding-right:8px;
 }
 
 .btn-synth{
@@ -82,9 +91,9 @@ vertical-align: top;
 }
 
 .btn-note{
-	width:30px;
+	width:28px;
 	height:64px;
-	margin-right:8px;
+	margin-right:6px;
 	color:#666666;
 	font-weight:bold;
 }

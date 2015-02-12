@@ -101,6 +101,17 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 				</div><!--End Controls Row-->
 				
+				<div class="row" style="">
+					<div class="col-xs-2 synth-label-bg"></div>
+					<div class="col-xs-7 tiny-text synth-label-bg" style="padding-left:2px;">Notes</div>
+					<div class="col-xs-3 tiny-text synth-label-bg">
+						<div class="row">
+							<div class="col-xs-6">Octave</div>
+							<div class="col-xs-6">Accent / Slide</div>
+						</div>
+					</div>
+				</div>
+
 				<!--Keyboard Row-->
 				<div class="row keyboard-row">
 						
@@ -111,9 +122,9 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 						</div>
 					</div>
 					
-					<div class="col-xs-8">
+					<div class="col-xs-7" style="padding:0;">
 
-						<div class="keyboard-container">
+						<div class="keyboard-container" style="">
 							<?php for($i=0;$i<count($notes);$i++) :
 
 								$btnBlack = '';
@@ -123,7 +134,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 									$btnBlack = ' btn-note-black ';
 								}
 								
-								?><div class="btn-synth btn-note <?=$btnBlack;?> ib" data-instrument-name="synth1" id="synth1_<?=strtolower($notes[$i]);?>"><?=$notes[$i];?></div><?php
+								?><div class="btn-synth btn-note js-note <?=$btnBlack;?> ib" data-instrument-name="synth1" data-note="<?=$notes[$i];?>" id="synth1_<?=strtolower($notes[$i]);?>"><?=$notes[$i];?></div><?php
 
 							endfor; ?>
 						</div>
@@ -131,6 +142,18 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 					</div>
 
 					<div class="col-xs-3">
+						<div class="row">
+							<div class="synth-octave-container col-xs-6 ib">
+								<div class="btn-synth btn-note tiny-text js-octave-btn js-octave-btn-down ib" data-instrument-name="synth1" data-direction="down">DN</div><?php
+								?><div class="btn-synth btn-note tiny-text js-octave-btn js-octave-btn-up ib" data-instrument-name="synth1" data-direction="up">UP</div>
+							</div>
+
+							<div class="synth-octave-container col-xs-6 ib" style="">
+								<div class="btn-synth btn-note tiny-text ib">AC</div><?php
+								?><div class="btn-synth btn-note tiny-text ib">SL</div>
+							</div>
+						</div>
+
 					</div>
 
 				</div><!--End Keyboard Row-->
