@@ -1,7 +1,7 @@
 var app = {
 
 	tempo: 130,
-	octave: 1,
+	octave: 2,
 
 	context: null,
 	oscillator: [],
@@ -103,72 +103,10 @@ var app = {
 
 	//----------------------------------------------------
 
-
-	//Convert keycode to note
-	getNote: function(keyCode){
-
-		var keyNotes = [];
-		keyNotes[90] = 'c0';
-		keyNotes[83] = 'c#0';
-		keyNotes[88] = 'd0';
-		keyNotes[68] = 'd#0';
-		keyNotes[67] = 'e0';
-		keyNotes[86] = 'f0';
-		keyNotes[71] = 'f#0';
-		keyNotes[66] = 'g0';
-		keyNotes[72] = 'g#0';
-		keyNotes[78] = 'a0';
-		keyNotes[74] = 'a#0';
-		keyNotes[77] = 'b0';
-		keyNotes[188] = 'c1';
-		keyNotes[76] = 'c#1';
-		keyNotes[190] = 'd1';
-		keyNotes[59] = 'd#1';
-		keyNotes[81] = 'c1';
-		keyNotes[50] = 'c#1';
-		keyNotes[87] = 'd1';
-		keyNotes[51] = 'd#1';
-		keyNotes[69] = 'e1';
-		keyNotes[82] = 'f1';
-		keyNotes[53] = 'f#1';
-		keyNotes[84] = 'g1';
-		keyNotes[54] = 'g#1';
-		keyNotes[89] = 'a1';
-		keyNotes[55] = 'a#1';
-		keyNotes[85] = 'b1';
-		keyNotes[73] = 'c2';
-		keyNotes[57] = 'c#2';
-		keyNotes[79] = 'd2';
-		keyNotes[48] = 'd#2';
-		keyNotes[80] = 'e2';
-		keyNotes[219] = 'f2';
-		keyNotes[61] = 'f#2';
-		keyNotes[221] = 'g2';
-
-		return keyNotes[keyCode];
-
-	},
-
-
-	//----------------------------------------------------
-
-
 	//Convert note to frequency
 	getFrequency: function(note){
 
 		var noteFreq = [];
-		noteFreq['c0']  = 16.35;
-		noteFreq['c#0'] = 17.32;
-		noteFreq['d0']  = 18.35;
-		noteFreq['d#0'] = 19.45;
-		noteFreq['e0']  = 20.60;
-		noteFreq['f0']  = 21.83;
-		noteFreq['f#0'] = 23.12;
-		noteFreq['g0']  = 24.50;
-		noteFreq['g#0'] = 25.96;
-		noteFreq['a0']  = 27.50;
-		noteFreq['a#0'] = 29.14;
-		noteFreq['b0']  = 30.87;
 
 		noteFreq['c1']  = 32.70;
 		noteFreq['c#1'] = 34.65;
@@ -191,6 +129,23 @@ var app = {
 		noteFreq['f2']  = 87.31;
 		noteFreq['f#2'] = 92.50;
 		noteFreq['g2']  = 98.00;
+		noteFreq['g#2'] = 103.83;
+		noteFreq['a2']  = 110.00;
+		noteFreq['a#2'] = 116.54;
+		noteFreq['b2']  = 123.47;
+
+		noteFreq['c3']  = 130.81;
+		noteFreq['c#3'] = 138.59;
+		noteFreq['d3']  = 146.83;
+		noteFreq['d#3'] = 155.56;
+		noteFreq['e3']  = 164.81;
+		noteFreq['f3']  = 174.61;
+		noteFreq['f#3'] = 185.00;
+		noteFreq['g3']  = 196.00;
+		noteFreq['g#3'] = 207.65;
+		noteFreq['a3']  = 220.00;
+		noteFreq['a#3'] = 233.08;
+		noteFreq['b3']  = 246.94;
 
 		return noteFreq[note];
 
@@ -200,39 +155,47 @@ var app = {
 	//----------------------------------------------------
 
 
-	playFrequency: function(instrument, freq){
+	playFrequency: function(instrument, freq, slide){
 
 		if(!isNaN(freq)){
 
-				app.oscillator[instrument] = app.context.createOscillator();
-				app.gainNode = app.context.createGain();
+				if(!slide){
 
-				var delay = app.context.createDelay();
+					app.oscillator[instrument] = app.context.createOscillator();
+					app.gainNode = app.context.createGain();
 
-				//Filter
-				app.oscillator[instrument].connect(app.filter);
+					var delay = app.context.createDelay();
 
-				
-			    delay.delayTime.value = 0.4;
-			    app.gainNode.gain.value = 0.1;
+					//Filter
+					app.oscillator[instrument].connect(app.filter);
 
-			    //Connect delay to gainNode - gainNode to Delay (create feedback)
-			    //delay.connect(app.gainNode);
-			    //app.gainNode.connect(delay);
+					
+				    delay.delayTime.value = 0.4;
+				    app.gainNode.gain.value = 0.1;
 
-			    //app.filter.connect(delay);
+				    //Connect delay to gainNode - gainNode to Delay (create feedback)
+				    //delay.connect(app.gainNode);
+				    //app.gainNode.connect(delay);
 
-				app.filter.connect(app.gainNode);
-				app.gainNode.connect(app.context.destination);
-				//delay.connect(app.context.destination);
+				    //app.filter.connect(delay);
+
+					app.filter.connect(app.gainNode);
+					app.gainNode.connect(app.context.destination);
+					//delay.connect(app.context.destination);
+
+				}
 
 				//Osc settings
-				app.frequency[instrument] = freq;
+				//app.frequency[instrument] = freq;
 				app.gainNode.gain.value = app.volume[instrument];
 				app.oscillator[instrument].type = app.waveform[instrument];
 				app.oscillator[instrument].frequency.value = freq; // value in hertz
 				app.oscillator[instrument].detune.value = app.detunePercentage; // value in cents
-				app.oscillator[instrument].start();
+				
+				//Start osc - if slide not active
+				if(!slide){
+					app.oscillator[instrument].start();
+				}
 
 				//console.log('Playing ' + freq);
 				//console.log(app.oscillator);
@@ -245,22 +208,17 @@ var app = {
 	//----------------------------------------------------
 
 
-	stopFrequency: function(instrument,freq){
+	stopOscillator: function(instrument){
 
+		if(app.oscillator[instrument]){
 
-		if(!isNaN(freq)){
-			
-			if(app.oscillator[instrument]){
+				app.oscillator[instrument].disconnect(app.filter);
+				app.filter.disconnect(app.gainNode);
+				//app.gainNode.connect(app.context.destination);
 
-					app.oscillator[instrument].disconnect(app.filter);
-					app.filter.disconnect(app.gainNode);
-					//app.gainNode.connect(app.context.destination);
-
-					//console.log('Stopping ' + freq)
-					app.oscillator[instrument].stop();
-					delete app.oscillator[instrument];
-
-			}
+				//console.log('Stopping ' + freq)
+				app.oscillator[instrument].stop();
+				delete app.oscillator[instrument];
 
 		}
 
@@ -379,35 +337,49 @@ var app = {
 		//Play a row, then call function again
 		function nextRow() {
 
+			
 			if(i>0){
 				var previousFreq = app.frequencies['synth1'][1][i-1];
 			} else {
 				var previousFreq = app.frequencies['synth1'][1][app.patternLength-1];
 			}
 			
+			
 			var currentFreq = app.frequencies['synth1'][1][i];
+
+			var slide = false;
+			if(i==4){
+				slide = true;
+			}
+
+			if(!previousFreq){
+				slide = false;
+			}
 
 		    //Check if sequence has been stopped
 		    if(!app.sequencePlaying){
 		    	if(previousFreq){
-		    		app.stopFrequency('synth1', previousFreq);
+		    		app.stopOscillator('synth1');
 		    	}
 		    	return;
 		    } 
 
-	    	//Stop previous note 
-		    if(previousFreq){
-		    	console.log('Stopping ' + previousFreq );
-		    	app.stopFrequency('synth1', previousFreq);
+	    	//Stop previous note (if slide not activated)
+		    if(!slide){
+		    	if(app.oscillator['synth1']){
+		    		console.log('Stopping ' + previousFreq );
+	    			app.stopOscillator('synth1');
+		    	}
 		    }
 
 		    //Play current note
 	    	if(currentFreq){
 	    		if(!app.mute['synth1']){
 	    			console.log('Playing ' + currentFreq );
-	    			app.playFrequency('synth1', currentFreq);
+	    			app.playFrequency('synth1', currentFreq, slide);
 	    		}
 	    	}
+
 
 	    	//Drums
 			playSample = function(key){
@@ -427,12 +399,6 @@ var app = {
 				}	
 			}
 			
-
-
-
-
-
-
 
 
 		    //Next row
