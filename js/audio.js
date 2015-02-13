@@ -5,12 +5,16 @@ var app = {
 
 	context: null,
 	oscillator: [],
+	filter: [],
+
+	filter2: [], //Second filter used to achieve 24db
+	filter2Active: true,
+
 	gainNode: null,
 	frequency: 100,
 	volume: [],
 	waveform: [],
-	detunePercentage: 0,
-	filter: null,
+	detunePercentage: [],
 	keyCode: 1,
 	keyDown: false,
 	sequencePlaying: false,
@@ -20,6 +24,8 @@ var app = {
 	rowSkip: 1, //Rows to jump after adding a note
 	lastFrequency: [],
 	notes:[], //To store patterns
+	slides:[],
+	accents:[],
 	drums:[], //To store drum patterns
 	mute:[],
 	frequencies:[], //To store frequencies
@@ -42,13 +48,25 @@ var app = {
 		app.mute['drum1']  = false;
 
 		//Create Filters
-		app.filter = app.context.createBiquadFilter();
-		app.filter.type = 'lowpass'; 
-		app.filter.frequency.value = 10000;
-		app.filter.Q.value = 8;
+		app.filter['synth1'] = app.context.createBiquadFilter();
+		app.filter['synth1'].type = 'lowpass'; 
+		app.filter['synth1'].frequency.value = 10000;
+		app.filter['synth1'].Q.value = 8;
+		app.filter['synth1'].gain.value = -50;
+
+		app.filter2['synth1'] = app.context.createBiquadFilter();
+		app.filter2['synth1'].type = 'lowpass'; 
+		app.filter2['synth1'].frequency.value = 10000;
+		app.filter2['synth1'].Q.value = 8;
+		app.filter2['synth1'].gain.value = -50;
+
+		//Detune
+		app.detunePercentage['synth1'] = 0;
 
 		app.notes['synth1'] = [];
 		app.frequencies['synth1'] = [];
+		app.slides['synth1'] = [];
+		app.accents['synth1'] = [];
 
 		//Set up the drums array
 		app.drums['drum1'] = [];
@@ -69,6 +87,8 @@ var app = {
 		for(var i=1; i<=app.patternCount; i++ ){
 			app.notes['synth1'][i] = new Array(app.patternLength);
 			app.frequencies['synth1'][i] = new Array(app.patternLength);
+			app.slides['synth1'][i] = new Array(app.patternLength);
+			app.accents['synth1'][i] = new Array(app.patternLength);
 
 			//Set up drum patterns
 			app.drums['drum1']['kick'][i] = new Array(app.patternLength);
@@ -81,10 +101,10 @@ var app = {
 		app.loadSamples();
 
  		//Test drum pattern
- 		//app.drums['drum1']['kick'][1][0] = true;
- 		//app.drums['drum1']['kick'][1][4] = true;
- 		//app.drums['drum1']['kick'][1][8] = true;
- 		//app.drums['drum1']['kick'][1][12] = true;
+ 		app.drums['drum1']['kick'][1][0] = true;
+ 		app.drums['drum1']['kick'][1][4] = true;
+ 		app.drums['drum1']['kick'][1][8] = true;
+ 		app.drums['drum1']['kick'][1][12] = true;
 
  		app.drums['drum1']['ch'][1][2] = true;
  		app.drums['drum1']['ch'][1][6] = true;
@@ -167,20 +187,27 @@ var app = {
 					var delay = app.context.createDelay();
 
 					//Filter
-					app.oscillator[instrument].connect(app.filter);
-
+					app.oscillator[instrument].connect(app.filter[instrument]);
 					
-				    delay.delayTime.value = 0.4;
-				    app.gainNode.gain.value = 0.1;
+				    //delay.delayTime.value = 0.390;
+				    app.gainNode.gain.value = 2;
 
 				    //Connect delay to gainNode - gainNode to Delay (create feedback)
 				    //delay.connect(app.gainNode);
 				    //app.gainNode.connect(delay);
 
-				    //app.filter.connect(delay);
+				    //app.filter[instrument].connect(delay);
 
-					app.filter.connect(app.gainNode);
-					app.gainNode.connect(app.context.destination);
+				    if(app.filter2Active){
+				    	app.filter[instrument].connect(app.filter2[instrument]);
+				    	app.filter2[instrument].connect(app.gainNode);
+				    } else {
+				    	app.filter[instrument].connect(app.gainNode);
+				    }
+
+
+					app.gainNode.connect(app.context.destination)
+					//app.gainNode.connect(app.context.destination);
 					//delay.connect(app.context.destination);
 
 				}
@@ -190,15 +217,35 @@ var app = {
 				app.gainNode.gain.value = app.volume[instrument];
 				app.oscillator[instrument].type = app.waveform[instrument];
 				app.oscillator[instrument].frequency.value = freq; // value in hertz
-				app.oscillator[instrument].detune.value = app.detunePercentage; // value in cents
+				app.oscillator[instrument].detune.value = app.detunePercentage[instrument]; // value in cents
 				
+				
+				//Filter decay test---------------------
+				var currentTime = app.context.currentTime;
+
+				//var filterDecay = 400;
+				//var newFilterCutoff = app.filter[instrument].frequency.value - filterDecay;
+
+				app.filter[instrument].frequency.cancelScheduledValues(currentTime);
+				app.filter2[instrument].frequency.cancelScheduledValues(currentTime);
+				
+				app.filter[instrument].frequency.setValueAtTime(10000, currentTime);
+				app.filter2[instrument].frequency.setValueAtTime(10000, currentTime);
+
+				app.filter[instrument].frequency.linearRampToValueAtTime(400, currentTime + 0.1);
+				app.filter2[instrument].frequency.linearRampToValueAtTime(400, currentTime + 0.1);
+				//End filter decay test-------------------
+
+
 				//Start osc - if slide not active
 				if(!slide){
 					app.oscillator[instrument].start();
 				}
 
+
 				//console.log('Playing ' + freq);
 				//console.log(app.oscillator);
+				console.log(app.detunePercentage[instrument]);
 			
 		}
 
@@ -213,7 +260,14 @@ var app = {
 		if(app.oscillator[instrument]){
 
 				app.oscillator[instrument].disconnect(app.filter);
-				app.filter.disconnect(app.gainNode);
+
+				if(app.filter2Active){
+					app.filter2[instrument].disconnect(app.gainNode);
+					app.filter[instrument].disconnect(app.filter2[instrument]);
+				} else {
+					app.filter[instrument].disconnect(app.gainNode);	
+				}
+				
 				//app.gainNode.connect(app.context.destination);
 
 				//console.log('Stopping ' + freq)
@@ -257,23 +311,40 @@ var app = {
 		console.log('Control: ' + controlName);
 		console.log('Value: ' + value);
 		console.log('-------------');
+
+		var filter = app.filter[instrument];
+		var filter2 = app.filter2[instrument];
 		
 		//Tuning
 		if(controlName == 'tune'){
-			app.detunePercentage = value;
+			app.detunePercentage[instrument] = value * 10;
 		}
 
 		//Cutoff frequency
 		if(controlName == 'cutoff'){
-			 app.filter.frequency.value = value * 100;
+			if(app.filter2Active){
+				filter.frequency.value = value * 100;
+			 	filter2.frequency.value = value * 100;
+			} else {
+				filter.frequency.value = value * 100;
+			}
 		}
 
 		//Resonance
 		if(controlName == 'reso'){
-			app.filter.Q.value = value / 4;
+			if(app.filter2Active){
+				filter.Q.value = value / 8.5;
+				filter2.Q.value = value / 8.5;
+			} else {
+				filter.Q.value = value / 4.5;
+			}
 		}
 
 		if(controlName == 'envmod'){
+
+		}
+
+		if(controlName == 'decay'){
 
 		}
 
@@ -331,11 +402,11 @@ var app = {
 		}
 
 		app.sequencePlaying = true;
-		var speed = 60000 / app.tempo / 4
+		var speed = 60000 / app.tempo / 4;
 		var i = 0;
 
 		//Play a row, then call function again
-		function nextRow() {
+		function nextStep() {
 
 			
 			if(i>0){
@@ -347,12 +418,9 @@ var app = {
 			
 			var currentFreq = app.frequencies['synth1'][1][i];
 
-			var slide = false;
-			if(i==4){
-				slide = true;
-			}
+			var slide = app.slides['synth1'][1][i];
 
-			if(!previousFreq){
+			if(!previousFreq || i===0){
 				slide = false;
 			}
 
@@ -405,20 +473,20 @@ var app = {
 		    if(i<(app.patternLength-1)) {
 		    	i++;
 		        setTimeout(function(){
-		        	nextRow();	
+		        	nextStep();	
 		        }, speed);
 
 		    } else {
 		    	//Back to start
 		    	setTimeout(function(){
 		        	i=0;
-		        	nextRow();
+		        	nextStep();
 		        }, speed);
 		    }
 
 		}
 
-		nextRow(false);
+		nextStep(false);
 
 	},
 

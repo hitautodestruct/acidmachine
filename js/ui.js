@@ -106,8 +106,6 @@ var ui = {
 
 		//Create Knobs
    		$(".dial").knob({
-   			'min':0,
-   			'max':127,
    			'angleOffset':-125,
    			'angleArc':250,
    			'width':48,
@@ -246,7 +244,7 @@ var ui = {
 
 			//Re-set the note and frequency for this step
 			var instrumentName = $(this).data('instrument-name');
-			var currentStep = $('#' + instrumentName + '_step').html()
+			var currentStep = $('#' + instrumentName + '_step').html();
 			var oldNote = app.notes[instrumentName][ui.patternID[instrumentName]][currentStep-1];
 			oldNote = oldNote.slice(0, -1); //Remove the octave from the old note
 			
@@ -280,6 +278,27 @@ var ui = {
    			$('#r' + currentStep + 'c1').val(newNote);
 
 		}); //End octave up/down buttons
+
+		
+		//Slide button
+		$('.js-slide-btn').click(function(){
+			$('.js-slide-btn').not(this).removeClass('btn-note-highlight');
+			$(this).toggleClass('btn-note-highlight');
+			var instrumentName = $(this).data('instrument-name');
+			var currentStep = $('#' + instrumentName + '_step').html();
+
+			var slide = false;
+			
+			if( $(this).hasClass('btn-note-highlight') ){
+				var slide = true;
+			}
+
+			//Update slides array
+			app.slides[instrumentName][ui.patternID[instrumentName]][currentStep-1] = slide;
+
+			console.log(app.slides);
+
+		});
 
 		
 
@@ -319,6 +338,14 @@ var ui = {
 		} else {
 			$('.js-note').removeClass('btn-note-highlight');
 			$('.js-octave-btn').removeClass('btn-note-highlight');
+		}
+
+		//Set slide button
+		var slide = app.slides[instrument][patternID][currentStep-1];
+		if(slide){
+			$('.js-slide-btn').addClass('btn-note-highlight');
+		} else {
+			$('.js-slide-btn').removeClass('btn-note-highlight');
 		}
 
 	},
@@ -373,7 +400,7 @@ var ui = {
 		for(i=0; i<app.patternLength; i++){
 			if(randomNotes[i]){
 
-				//Decide whether to set the octave up or down
+				//Randomise octave up or down
 				var octaveRand = Math.floor( Math.random() * 10);
 				if( octaveRand == 1){
 					noteOctave = app.octave + 1;
@@ -382,6 +409,15 @@ var ui = {
 				} else {
 					noteOctave = app.octave;
 				}
+
+				//Randomise Slide
+				var slideRand = Math.floor( Math.random() * 10 );
+				var slide = false;
+				if(slideRand < 3){
+					slide = true;
+				} 
+
+				app.slides[instrument][ui.patternID[instrument]][i] = slide;
 
 				app.notes[instrument][ui.patternID[instrument]][i] = randomNotes[i] + noteOctave;
 				app.frequencies[instrument][ui.patternID[instrument]][i] = app.getFrequency(randomNotes[i]+noteOctave);	

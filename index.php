@@ -59,32 +59,32 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 							<div class="col-xs-2">
 								Tune
-								<input type="text" value="64" class="dial" name="synth1_tune">
+								<input type="text" value="0" class="dial" name="synth1_tune" data-min="-120" data-max="120">
 							</div>
 
 							<div class="col-xs-2">
 								Cutoff
-								<input type="text" value="127" class="dial" name="synth1_cutoff">
+								<input type="text" value="100" class="dial" name="synth1_cutoff" data-min="5" data-max="100">
 							</div>
 
 							<div class="col-xs-2">
 								Reso
-								<input type="text" value="16" class="dial" name="synth1_reso">
+								<input type="text" value="25" class="dial" name="synth1_reso"  data-min="0" data-max="100">
 							</div>
 
 							<div class="col-xs-2">
 								Env.Mod
-								<input type="text" value="64" class="dial" name="synth1_envmod">
+								<input type="text" value="50" class="dial" name="synth1_envmod" data-min="0" data-max="100">
 							</div>
 
 							<div class="col-xs-2">
 								Decay
-								<input type="text" value="0" class="dial" name="synth1_decay">
+								<input type="text" value="0" class="dial" name="synth1_decay" data-min="0" data-max="100">
 							</div>
 
 							<div class="col-xs-2">
 								Accent
-								<input type="text" value="0" class="dial" name="synth1_accent">
+								<input type="text" value="0" class="dial" name="synth1_accent" data-min="0" data-max="100">
 							</div>
 
 						</div>
@@ -149,8 +149,8 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 							</div>
 
 							<div class="synth-octave-container col-xs-6 ib" style="">
-								<div class="btn-synth btn-note tiny-text ib">AC</div><?php
-								?><div class="btn-synth btn-note tiny-text ib">SL</div>
+								<div class="btn-synth btn-note tiny-text ib" data-instrument-name="synth1">AC</div><?php
+								?><div class="btn-synth btn-note tiny-text js-slide-btn ib" data-instrument-name="synth1">SL</div>
 							</div>
 						</div>
 
