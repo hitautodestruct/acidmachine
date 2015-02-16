@@ -29,9 +29,11 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 		<div class="row" style="margin-top:16px;">
 			
 			<!--Synth 1 Pattern Selector-->
-			<div class="col-xs-2">
-				<div id="muteDrums" class="btn-synth">Mute Drums <span class="tiny-text">[D]</span></div>
-				<div id="muteSynth" class="btn-synth" style="margin-top:4px;">Mute Synth <span class="tiny-text">[S]</span></div>
+			<div class="col-xs-2 panel-bg">
+				<div id="muteSynth" class="panel-light" style="display:none;"></div>
+				<?php for($i=1;$i<=8;$i++) : ?>
+					<div class="ib pattern-select-btn btn-note btn-synth js-pattern-select" data-instrument-name="synth1" data-pattern-number="<?=$i;?>" id="pattern_synth1_<?=$i;?>"><?=$i;?></div>
+				<?php endfor; ?>
 			</div>
 
 			<!--Synth 1 Main-->
@@ -69,17 +71,17 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 							<div class="col-xs-2">
 								Reso
-								<input type="text" value="25" class="dial" name="synth1_reso"  data-min="0" data-max="100">
+								<input type="text" value="15" class="dial" name="synth1_reso"  data-min="0" data-max="90">
 							</div>
 
 							<div class="col-xs-2">
 								Env.Mod
-								<input type="text" value="50" class="dial" name="synth1_envmod" data-min="0" data-max="100">
+								<input type="text" value="75" class="dial" name="synth1_envmod" data-min="1" data-max="100">
 							</div>
 
 							<div class="col-xs-2">
 								Decay
-								<input type="text" value="0" class="dial" name="synth1_decay" data-min="0" data-max="100">
+								<input type="text" value="40" class="dial" name="synth1_decay" data-min="8" data-max="40">
 							</div>
 
 							<div class="col-xs-2">
@@ -165,7 +167,15 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 		<div class="spacer-vertical"></div>
 
 		<div class="row">
-			<div class="col-xs-2"></div>
+
+			<!--Drum 1 Pattern Selector-->
+			<div class="col-xs-2">
+				<!--<div id="muteDrums" class="panel-light" style="display:none;"></div>-->
+				<?php for($i=1;$i<=8;$i++) : ?>
+					<div class="ib pattern-select-btn btn-note btn-synth js-pattern-select" data-instrument-name="drum1" data-pattern-number="<?=$i;?>" id="pattern_drum1_<?=$i;?>"><?=$i;?></div>
+				<?php endfor; ?>
+			</div>
+
 			<div class="col-xs-8 drum1-main instrument-shadow">Drums Here</div>
 			<div class="col-xs-2"></div>
 		</div>

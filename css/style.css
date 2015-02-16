@@ -19,7 +19,7 @@ vertical-align: top;
 
 .drum1-main{
 	background:#EEE;
-	height:64px;
+	height:128px;
 	border-radius:2px;
 }
 
@@ -339,4 +339,25 @@ vertical-align: top;
 }
 .toggle-switch-h-right{
 	float:right !important;
+}
+
+.pattern-select-btn{
+	width:32px;
+	height:38px;
+	text-align:center;
+	vertical-align:middle;
+	margin-bottom:8px;
+}
+
+.btn-pattern-waiting{
+	background:#ccc;
+}
+.panel-bg{
+
+}
+
+.panel-light{
+	background:cyan;
+	width:12px;
+	height:12px;
 }
