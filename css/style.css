@@ -350,7 +350,7 @@ vertical-align: top;
 }
 
 .btn-pattern-waiting{
-	background:#ccc;
+	background:#bbb;
 }
 .panel-bg{
 
@@ -360,4 +360,36 @@ vertical-align: top;
 	background:cyan;
 	width:12px;
 	height:12px;
+}
+
+.tempo-light{
+	width:16px;
+	height:10px;
+	background:#333;
+	margin-top:8px;
+	margin-left:2px;
+}
+
+.tempo-light-on{
+	background:#666;
+}
+
+/*Slider*/
+.ui-slider{
+	border:0 !important;
+	background:#222 !important;
+}
+
+.ui-widget-header{
+	background:#999;
+}
+
+.ui-corner-all{
+	border-radius:1px !important;
+}
+
+.ui-slider-handle{
+	border:0 !important;
+	box-shadow: 0px 3px 3px #333;
+	display:none;
 }

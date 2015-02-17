@@ -7,6 +7,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 <link rel="stylesheet" type="text/css" href="css/reset.css">
 <link rel="stylesheet" type="text/css" href="css/bootstrap_grid.min.css">
 <link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/jquery-ui.css">
 </head>
 <body>
 
@@ -24,19 +25,28 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 			<div class="col-xs-6 title-block">
 				<span class="pull-right" style="padding-right:32px;">ACID MACHINE</span>
 			</div>
+			<div class="col-xs-2 title-block">
+				<div class="pull-right">
+					<?php for($i=1; $i<=4; $i++) : ?><div class="ib tempo-light <?=($i==1 ? 'tempo-light-on' : '');?>"></div><?php endfor;?>
+				</div>
+			</div>
 		</div>
 
-		<div class="row" style="margin-top:16px;">
+		<div class="spacer-vertical"></div>
+
+		<?php for($synthID=1;$synthID<=2;$synthID++) : ?>
+
+		<div class="row">
 			
-			<!--Synth 1 Pattern Selector-->
+			<!--Synth <?=$synthID;?> Pattern Selector-->
 			<div class="col-xs-2 panel-bg">
 				<div id="muteSynth" class="panel-light" style="display:none;"></div>
 				<?php for($i=1;$i<=8;$i++) : ?>
-					<div class="ib pattern-select-btn btn-note btn-synth js-pattern-select" data-instrument-name="synth1" data-pattern-number="<?=$i;?>" id="pattern_synth1_<?=$i;?>"><?=$i;?></div>
+					<div class="ib pattern-select-btn btn-note btn-synth js-pattern-select" data-instrument-name="synth<?=$synthID;?>" data-pattern-number="<?=$i;?>" id="pattern_synth<?=$synthID;?>_<?=$i;?>"><?=$i;?></div>
 				<?php endfor; ?>
 			</div>
 
-			<!--Synth 1 Main-->
+			<!--Synth <?=$synthID;?> Main-->
 			<div class="col-xs-8 synth-main instrument-shadow">
 				
 				<!--Controls Row-->
@@ -48,7 +58,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 						<br>
 						
 						<span class="ib">Sw</span>
-						<div class="toggle-switch-bg js-waveform-toggle ib" data-instrument-name="synth1">
+						<div class="toggle-switch-bg js-waveform-toggle ib" data-instrument-name="synth<?=$synthID;?>">
 							<div class="toggle-switch-h"></div>
 						</div>
 						<span class="ib">Sq</span>
@@ -61,32 +71,32 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 							<div class="col-xs-2">
 								Tune
-								<input type="text" value="0" class="dial" name="synth1_tune" data-min="-120" data-max="120">
+								<input type="text" value="0" class="dial" name="synth<?=$synthID;?>_tune" data-min="-120" data-max="120">
 							</div>
 
 							<div class="col-xs-2">
 								Cutoff
-								<input type="text" value="100" class="dial" name="synth1_cutoff" data-min="5" data-max="100">
+								<input type="text" value="100" class="dial" name="synth<?=$synthID;?>_cutoff" data-min="5" data-max="100">
 							</div>
 
 							<div class="col-xs-2">
 								Reso
-								<input type="text" value="15" class="dial" name="synth1_reso"  data-min="0" data-max="90">
+								<input type="text" value="15" class="dial" name="synth<?=$synthID;?>_reso"  data-min="0" data-max="90">
 							</div>
 
 							<div class="col-xs-2">
 								Env.Mod
-								<input type="text" value="75" class="dial" name="synth1_envmod" data-min="1" data-max="100">
+								<input type="text" value="75" class="dial" name="synth<?=$synthID;?>_envmod" data-min="1" data-max="100">
 							</div>
 
 							<div class="col-xs-2">
 								Decay
-								<input type="text" value="40" class="dial" name="synth1_decay" data-min="8" data-max="40">
+								<input type="text" value="40" class="dial" name="synth<?=$synthID;?>_decay" data-min="8" data-max="50">
 							</div>
 
 							<div class="col-xs-2">
 								Accent
-								<input type="text" value="0" class="dial" name="synth1_accent" data-min="0" data-max="100">
+								<input type="text" value="0" class="dial" name="synth<?=$synthID;?>_accent" data-min="0" data-max="100">
 							</div>
 
 						</div>
@@ -95,9 +105,9 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 					
 					<div class="col-xs-2 current-step-container">
 						Current Step
-						<div class="synth-lcd ib" id="synth1_step">1</div><div class="ib">
-							<div class="btn-synth btn-small js-synth-step-up"  data-instrument-name="synth1">UP</div>
-							<div class="btn-synth btn-small js-synth-step-down"  data-instrument-name="synth1">DN</div>
+						<div class="synth-lcd ib" id="synth<?=$synthID;?>_step">1</div><div class="ib">
+							<div class="btn-synth btn-small js-synth-step-up"  data-instrument-name="synth<?=$synthID;?>">UP</div>
+							<div class="btn-synth btn-small js-synth-step-down"  data-instrument-name="synth<?=$synthID;?>">DN</div>
 						</div>
 					</div>
 
@@ -119,7 +129,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 						
 					<div class="col-xs-2">
 						Randomize
-						<div class="btn-synth btn-randomize" data-instrument-name="synth1">
+						<div class="btn-synth btn-randomize" data-instrument-name="synth<?=$synthID;?>">
 
 						</div>
 					</div>
@@ -136,7 +146,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 									$btnBlack = ' btn-note-black ';
 								}
 								
-								?><div class="btn-synth btn-note js-note <?=$btnBlack;?> ib" data-instrument-name="synth1" data-note="<?=$notes[$i];?>" id="synth1_<?=strtolower($notes[$i]);?>"><?=$notes[$i];?></div><?php
+								?><div class="btn-synth btn-note js-note <?=$btnBlack;?> ib" data-instrument-name="synth<?=$synthID;?>" data-note="<?=$notes[$i];?>" id="synth<?=$synthID;?>_<?=strtolower($notes[$i]);?>"><?=$notes[$i];?></div><?php
 
 							endfor; ?>
 						</div>
@@ -146,13 +156,13 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 					<div class="col-xs-3">
 						<div class="row">
 							<div class="synth-octave-container col-xs-6 ib">
-								<div class="btn-synth btn-note tiny-text js-octave-btn js-octave-btn-down ib" data-instrument-name="synth1" data-direction="down">DN</div><?php
-								?><div class="btn-synth btn-note tiny-text js-octave-btn js-octave-btn-up ib" data-instrument-name="synth1" data-direction="up">UP</div>
+								<div class="btn-synth btn-note tiny-text js-octave-btn js-octave-btn-down ib" data-instrument-name="synth<?=$synthID;?>" data-direction="down">DN</div><?php
+								?><div class="btn-synth btn-note tiny-text js-octave-btn js-octave-btn-up ib" data-instrument-name="synth<?=$synthID;?>" data-direction="up">UP</div>
 							</div>
 
 							<div class="synth-octave-container col-xs-6 ib" style="">
-								<div class="btn-synth btn-note tiny-text ib" data-instrument-name="synth1">AC</div><?php
-								?><div class="btn-synth btn-note tiny-text js-slide-btn ib" data-instrument-name="synth1">SL</div>
+								<div class="btn-synth btn-note tiny-text ib" data-instrument-name="synth<?=$synthID;?>">AC</div><?php
+								?><div class="btn-synth btn-note tiny-text js-slide-btn ib" data-instrument-name="synth<?=$synthID;?>">SL</div>
 							</div>
 						</div>
 
@@ -160,11 +170,23 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 				</div><!--End Keyboard Row-->
 
-			</div><!--End Synth 1 Main-->
+			</div><!--End Synth <?=$synthID;?> Main-->
+
+			<div class="col-xs-2 vol-container">
+				<div data-instrument-name="synth<?=$synthID;?>" class="js-instrument-vol-slider"></div>
+			</div>
 
 		</div><!--End Row-->
 
 		<div class="spacer-vertical"></div>
+
+		<?php endfor //End synth loop ;?>
+
+
+
+
+
+
 
 		<div class="row">
 
@@ -177,7 +199,9 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 			</div>
 
 			<div class="col-xs-8 drum1-main instrument-shadow">Drums Here</div>
-			<div class="col-xs-2"></div>
+			<div class="col-xs-2">
+				<div data-instrument-name="drum1" class="js-instrument-vol-slider"></div>
+			</div>
 		</div>
 
 
@@ -230,6 +254,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 <script src="js/jquery-2.1.3.min.js"></script>
 <script src="js/jquery_knob.js"></script>
+<script src="js/jquery-ui.min.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/ui.js"></script>
 </body>

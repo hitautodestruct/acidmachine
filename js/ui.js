@@ -131,8 +131,24 @@ var ui = {
 
    		});
 
+   		//Create Sliders
+		$( ".js-instrument-vol-slider" ).slider({
+			orientation: "vertical",
+			range: "min",
+			min: 0,
+			max: 24,
+			value: 20,
+			slide: function( event, ui ) {
+				var instrumentName = $(this).data('instrument-name');
+				app.setInstrumentVolume(instrumentName, ui.value);
+			}
+		});
+
+
    		//Highlight init patterns
    		$('#pattern_synth1_' + app.patternID['synth1']).addClass('btn-note-highlight');
+   		$('#pattern_synth2_' + app.patternID['synth2']).addClass('btn-note-highlight');
+
    		$('#pattern_drum1_' + app.patternID['drum1']).addClass('btn-note-highlight');
 
 
@@ -310,8 +326,16 @@ var ui = {
 			app.nextPattern[instrumentName] = patternNumber;
 
 			$('.js-pattern-select[data-instrument-name="' + instrumentName + '"]').removeClass('btn-pattern-waiting');
-			$('.btn-pattern-waiting').addClass('btn-pattern-waiting');
-			$(this).addClass('btn-pattern-waiting');
+			
+			//Set button to waiting mode if playing otherwise - highlight instantly
+			if(app.sequencePlaying){
+				$(this).addClass('btn-pattern-waiting');
+			} else {
+				$('.js-pattern-select[data-instrument-name="' + instrumentName + '"]').removeClass('btn-note-highlight');
+				$(this).addClass('btn-note-highlight');
+				ui.updateStepValue(instrumentName,patternNumber,1);
+			}
+
 		});
 
 		
@@ -321,6 +345,11 @@ var ui = {
 	//----------------------------------------------------
 
 	updateStepValue: function(instrument, patternID, currentStep){
+
+		//Do nothing for drums (for now)
+		if(instrument === 'drum1'){
+			return;
+		}
 
 		//Get the note for the selected instument, pattern Id and current step
 		var highlightNote = app.notes[instrument][patternID][currentStep-1];
