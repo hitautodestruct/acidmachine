@@ -198,7 +198,57 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 				<?php endfor; ?>
 			</div>
 
-			<div class="col-xs-8 drum1-main instrument-shadow">Drums Here</div>
+			<!--Drum 1 Main-->
+			<div class="col-xs-8 drum1-main instrument-shadow">
+				
+				<!--Controls Row-->
+				<div class="row">
+
+					<div class="col-xs-1"></div>
+
+					<div class="col-xs-11">
+
+						<?php
+						$drum1_drums = array('bd', 'sd', 'lt', 'mt', 'ht', 'rs/cp', 'ch/oh', 'cc/rc');
+						$drum1_step = 0;
+						foreach($drum1_drums as $drum) : 
+
+							//Loop through each drum and create controls
+
+							?><div class="drum-controls-container ib">
+								<div class="drum-title"><?=strtoupper($drum);?></div>
+
+								<label>Level</label>
+								<div><input type="text" value="15" class="dial-drum" name="drum1_<?=$drum;?>_vol" data-width="16" data-min="0" data-max="90" style="width:1px;"></div>
+								
+								<div class="btn-drum ib js-drumpad-<?=$drum1_step; ?>"></div><!--
+							--><div class="btn-drum ib js-drumpad-<?=$drum1_step + 1;?>"></div>
+							</div><?php $drum1_step = $drum1_step+2; endforeach; ?>
+
+
+					</div>
+					
+				</div><!--End Controls Row-->
+
+				<div class="row" style="margin-top:48px;">
+					<div class="col-xs-1"></div>
+					<div class="col-xs-11">
+						<?php for($i=1;$i<=16;$i++) : ?><div class="ib drum-step-numbers <?=(in_array($i,array(1,5,9,13)) ? ' drum-step-numbers-highlight ' : '');?>"><?=$i;?></div><?php endfor;?>
+					</div>
+				</div>
+
+				<div class="row"><!--Drum Pads Row-->
+					<div class="col-xs-1"></div>
+					<div class="col-xs-11">
+						<!--<?php for($i=0;$i<16;$i++) : ?><div class="btn-drum ib"></div><?php endfor;?>-->
+					</div>
+				</div>
+
+				<div class="row">
+				</div>
+
+			</div>
+			
 			<div class="col-xs-2">
 				<div data-instrument-name="drum1" class="js-instrument-vol-slider"></div>
 			</div>

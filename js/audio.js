@@ -44,6 +44,10 @@ var app = {
 
 	synthCount: 2,
 
+	//DRUMS
+	selectedDrum: [],
+
+
 	testPattern:true, //Rebirth default pattern for testing
 
 
@@ -96,7 +100,7 @@ var app = {
 
 		//Set up the drums array
 		app.drums['drum1'] = [];
-		app.drums['drum1']['kick'] = [];
+		app.drums['drum1']['bd'] = [];
 		app.drums['drum1']['sd'] = [];
 		app.drums['drum1']['ch'] = [];
 		app.drums['drum1']['oh'] = [];
@@ -129,7 +133,7 @@ var app = {
 			}
 
 			//Set up drum patterns
-			app.drums['drum1']['kick'][i] = new Array(app.patternLength);
+			app.drums['drum1']['bd'][i] = new Array(app.patternLength);
 			app.drums['drum1']['sd'][i] = new Array(app.patternLength);
 			app.drums['drum1']['ch'][i] = new Array(app.patternLength);
 			app.drums['drum1']['oh'][i] = new Array(app.patternLength);
@@ -139,10 +143,10 @@ var app = {
 		app.loadSamples();
 
  		//Test drum pattern
- 		app.drums['drum1']['kick'][1][0] = true;
- 		app.drums['drum1']['kick'][1][4] = true;
- 		app.drums['drum1']['kick'][1][8] = true;
- 		app.drums['drum1']['kick'][1][12] = true;
+ 		app.drums['drum1']['bd'][1][0] = true;
+ 		app.drums['drum1']['bd'][1][4] = true;
+ 		app.drums['drum1']['bd'][1][8] = true;
+ 		app.drums['drum1']['bd'][1][12] = true;
 
  		//app.drums['drum1']['rs'][1][13] = true;
  		//app.drums['drum1']['rs'][1][15] = true;
@@ -151,10 +155,10 @@ var app = {
  		app.drums['drum1']['sd'][1][12] = true;
 
 
- 		app.drums['drum1']['kick'][2][0] = true;
- 		app.drums['drum1']['kick'][2][4] = true;
- 		app.drums['drum1']['kick'][2][8] = true;
- 		app.drums['drum1']['kick'][2][12] = true;
+ 		app.drums['drum1']['bd'][2][0] = true;
+ 		app.drums['drum1']['bd'][2][4] = true;
+ 		app.drums['drum1']['bd'][2][8] = true;
+ 		app.drums['drum1']['bd'][2][12] = true;
 
  		app.drums['drum1']['ch'][2][2] = true;
  		app.drums['drum1']['ch'][2][6] = true;
@@ -166,10 +170,10 @@ var app = {
 
 
 
- 		app.drums['drum1']['kick'][3][0] = true;
- 		app.drums['drum1']['kick'][3][4] = true;
- 		app.drums['drum1']['kick'][3][8] = true;
- 		app.drums['drum1']['kick'][3][12] = true;
+ 		app.drums['drum1']['bd'][3][0] = true;
+ 		app.drums['drum1']['bd'][3][4] = true;
+ 		app.drums['drum1']['bd'][3][8] = true;
+ 		app.drums['drum1']['bd'][3][12] = true;
 
  		app.drums['drum1']['ch'][3][2] = true;
  		app.drums['drum1']['ch'][3][6] = true;
@@ -182,6 +186,15 @@ var app = {
  		app.drums['drum1']['sd'][3][13] = true;
  		app.drums['drum1']['sd'][3][14] = true;
  		app.drums['drum1']['sd'][3][15] = true;
+
+ 		app.drums['drum1']['bd'][4][0] = true;
+ 		app.drums['drum1']['bd'][4][2] = true;
+ 		app.drums['drum1']['bd'][4][4] = true;
+ 		app.drums['drum1']['bd'][4][11] = true;
+ 		app.drums['drum1']['bd'][4][14] = true;
+ 		app.drums['drum1']['bd'][4][15] = true;
+
+ 		app.selectedDrum['drum1'] = 'bd';
 
 
 
@@ -313,7 +326,7 @@ var app = {
 				
 				
 				//Slide or just set frequency
-				if(slide){
+				if(slide){ 
 					var speed = 60000 / app.tempo / 4;
 					var slideTime = speed / 24  / 100;
 					//alert(slideTime);
@@ -494,7 +507,7 @@ var app = {
 	loadSamples: function(){
 
 		var samplePaths = [];
-		samplePaths['kick']   = 'bd01.wav';
+		samplePaths['bd']   = 'bd01.wav';
 		samplePaths['sd']   = 'sd10.wav';
 		samplePaths['ch']   = 'hh01.wav';
 		samplePaths['oh']   = 'oh01.wav';

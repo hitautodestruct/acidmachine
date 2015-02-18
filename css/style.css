@@ -17,11 +17,6 @@ vertical-align: top;
 	box-shadow: 6px 6px 3px #222222;
 }
 
-.drum1-main{
-	background:#EEE;
-	height:128px;
-	border-radius:2px;
-}
 
 .synth-main{
 	background: #cccccc;
@@ -373,6 +368,89 @@ vertical-align: top;
 .tempo-light-on{
 	background:#666;
 }
+
+
+
+/*DRUMS*/
+.drum1-main{
+	background:#EEE;
+	
+	border-radius:2px;
+	padding-top:6px;
+}
+
+.drum-controls-container{
+	font-size:10px;
+	width:11.9%;
+	margin-right:4px;
+	border-left:1px solid #999;
+	border-right:1px solid #999;
+	height:50px;
+	margin-bottom:4px;
+	text-align:center;
+}
+.drum-controls-container .drum-title{
+	font-size:10px;
+	background:#333;
+	color:orange;
+	width:100%;
+	text-align:center;
+}
+.btn-drum{
+	background:#ccc;
+	width:46%;
+	height:32px;
+	margin-right:6px;
+	margin-top:2px;
+	border-bottom:1px solid #999;
+	border-right:1px solid #999;
+	border-radius:2px;
+
+	box-shadow: 0px 1px 2px #666666;
+
+	background: #ffffff; /* Old browsers */
+	background: -moz-linear-gradient(top,  #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(50%,#f1f1f1), color-stop(51%,#e1e1e1), color-stop(100%,#f6f6f6)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #ffffff 0%,#f1f1f1 50%,#e1e1e1 51%,#f6f6f6 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f6f6f6',GradientType=0 ); /* IE6-9 */
+
+
+}
+
+.btn-drum-highlight-2{
+	background: #f7a394; /* Old browsers */
+background: -moz-linear-gradient(top,  #f7a394 0%, #f16f5c 50%, #f47564 51%, #ef6353 72%, #e54334 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f7a394), color-stop(50%,#f16f5c), color-stop(51%,#f47564), color-stop(72%,#ef6353), color-stop(100%,#e54334)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  #f7a394 0%,#f16f5c 50%,#f47564 51%,#ef6353 72%,#e54334 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  #f7a394 0%,#f16f5c 50%,#f47564 51%,#ef6353 72%,#e54334 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  #f7a394 0%,#f16f5c 50%,#f47564 51%,#ef6353 72%,#e54334 100%); /* IE10+ */
+background: linear-gradient(to bottom,  #f7a394 0%,#f16f5c 50%,#f47564 51%,#ef6353 72%,#e54334 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7a394', endColorstr='#e54334',GradientType=0 ); /* IE6-9 */
+
+}
+
+.btn-drum:last-child{
+	margin-right:0;
+}
+
+.drum-step-numbers{
+	background:#333;
+	width:6.2%;
+	text-align:center;
+	font-size:12px;
+	margin-bottom:6px;
+	color:#888;
+	padding:0;
+	height:15px;
+}
+
+.drum-step-numbers-highlight {
+	color:#fff;
+}
+
 
 /*Slider*/
 .ui-slider{

@@ -131,13 +131,42 @@ var ui = {
 
    		});
 
+   		//Create Knobs
+   		$(".dial-drum").knob({
+   			'angleOffset':-125,
+   			'angleArc':250,
+   			'width':32,
+   			'height':32,
+   			'thickness':0.7,
+   			'displayInput':false,
+   			'bgColor':'#aaaaaa',	
+   			'fgColor':'#333333',
+
+   			'change' : function(v){
+   				var value = v;
+
+   				//Get the input name (contains instrument name and control name)
+   				var inputName = this.$.context.name;
+
+   				inputName = inputName.split('_');
+
+   				var instrumentName = inputName[0];
+   				var controlName = inputName[1];
+
+   				app.setControlKnob(instrumentName, controlName, value);
+   				
+   			}
+   			
+
+   		});
+
    		//Create Sliders
 		$( ".js-instrument-vol-slider" ).slider({
 			orientation: "vertical",
 			range: "min",
 			min: 0,
 			max: 24,
-			value: 20,
+			value: 60,
 			slide: function( event, ui ) {
 				var instrumentName = $(this).data('instrument-name');
 				app.setInstrumentVolume(instrumentName, ui.value);
@@ -334,15 +363,41 @@ var ui = {
 				$('.js-pattern-select[data-instrument-name="' + instrumentName + '"]').removeClass('btn-note-highlight');
 				$(this).addClass('btn-note-highlight');
 				ui.updateStepValue(instrumentName,patternNumber,1);
+				ui.updateDrumPads(patternNumber);
 			}
 
 		});
 
 		
+		ui.updateDrumPads(app.patternID['drum1']);
+
 
 	},
 
 	//----------------------------------------------------
+
+	updateDrumPads: function(patternID){
+
+		var instrument = 'drum1';
+		var selectedDrum = app.selectedDrum[instrument];
+		var currentDrumStep = app.drums[instrument][selectedDrum][patternID];
+
+		$('.btn-drum-highlight-2').removeClass('btn-drum-highlight-2');
+		$('.btn-drum-highlight-1').removeClass('btn-drum-highlight-1');
+
+		//Loop through pattern steps
+		for(var i=0; i<16; i++){
+
+			if(currentDrumStep[i]){
+				console.log('js-drumpad-' + i );
+				$('.js-drumpad-' + i ).addClass('btn-drum-highlight-2');
+			}
+
+		}
+
+	},
+
+	//----------------------------------------------------	
 
 	updateStepValue: function(instrument, patternID, currentStep){
 
@@ -488,6 +543,7 @@ var ui = {
 		$('.js-pattern-select[data-instrument-name="' + instrumentName + '"]').removeClass('btn-note-highlight');
 		$('.js-pattern-select[data-instrument-name="' + instrumentName + '"]').removeClass('btn-pattern-waiting');
 		$('#pattern_' + instrumentName + '_' + patternID).addClass('btn-note-highlight');
+		ui.updateDrumPads(patternID);
 	}
 
 
