@@ -219,10 +219,19 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 								<div class="drum-title"><?=strtoupper($drum);?></div>
 
 								<label>Level</label>
-								<div><input type="text" value="15" class="dial-drum" name="drum1_<?=$drum;?>_vol" data-width="16" data-min="0" data-max="90" style="width:1px;"></div>
+								<div><input type="text" value="0" class="dial-drum js-dial-drum" name="drum1_<?=$drum;?>_vol" data-width="16" data-min="0" data-max="100" style="width:1px;"></div>
 								
-								<div class="btn-drum ib js-drumpad-<?=$drum1_step; ?>"></div><!--
-							--><div class="btn-drum ib js-drumpad-<?=$drum1_step + 1;?>"></div>
+								<?php 
+								$drumSplit = explode('/',$drum);
+								if( count($drumSplit) > 1 ) : ?>
+									<div class="btn-drum-selector btn-drum-selector-half ib" data-instrument-name="drum1" data-drum-name="<?=$drumSplit[0];?>"><?=strtoupper($drumSplit[0]);?></div><!--
+								 --><div class="btn-drum-selector btn-drum-selector-half btn-drum-selector-half2 ib" data-instrument-name="drum1" data-drum-name="<?=$drumSplit[1];?>"><?=strtoupper($drumSplit[1]);?></div>
+								<?php else : ?>
+									<div class="btn-drum-selector" data-instrument-name="drum1" data-drum-name="<?=$drum;?>"><?=strtoupper($drum);?></div>
+								<?php endif; ?>
+								
+								<div class="btn-drum ib js-drumpad js-drumpad-<?=$drum1_step; ?>" data-instrument-name="drum1" data-drum-step="<?=$drum1_step;?>"></div><!--
+							--><div class="btn-drum ib js-drumpad js-drumpad-<?=$drum1_step + 1;?>" data-instrument-name="drum1" data-drum-step="<?=$drum1_step + 1;?>"></div>
 							</div><?php $drum1_step = $drum1_step+2; endforeach; ?>
 
 
@@ -230,7 +239,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 					
 				</div><!--End Controls Row-->
 
-				<div class="row" style="margin-top:48px;">
+				<div class="row" style="margin-top:64px;">
 					<div class="col-xs-1"></div>
 					<div class="col-xs-11">
 						<?php for($i=1;$i<=16;$i++) : ?><div class="ib drum-step-numbers <?=(in_array($i,array(1,5,9,13)) ? ' drum-step-numbers-highlight ' : '');?>"><?=$i;?></div><?php endfor;?>

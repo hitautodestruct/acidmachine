@@ -1,6 +1,6 @@
 var app = {
 
-	tempo: 130,
+	tempo: 140,
 	octave: 2,
 
 	context: null,
@@ -34,8 +34,8 @@ var app = {
 	mute:[],
 	frequencies:[], //To store frequencies
 	
-	//availableNotes: ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'], //All notes
-	availableNotes: ['c','d#','f','g','a#','c'], //Minor pentatonic c
+	availableNotes: ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'], //All notes
+	//availableNotes: ['c','d#','f','g','a#','c'], //Minor pentatonic c
 	
 	samples:[],
 
@@ -66,7 +66,21 @@ var app = {
 			app.mute['synth' + i] = false;
 		}
 
-		app.volume['drum1'] = 0.9;
+		app.volume['drum1'] = [];
+		app.volume['drum1']['master'] = 0.9;
+		app.volume['drum1']['bd'] = 1.0;
+		app.volume['drum1']['sd'] = 1.0;
+		app.volume['drum1']['lt'] = 1.0;
+		app.volume['drum1']['mt'] = 1.0;
+		app.volume['drum1']['ht'] = 1.0;
+		app.volume['drum1']['rs'] = 1.0;
+		app.volume['drum1']['cp'] = 1.0;
+		app.volume['drum1']['ch'] = 0.4;
+		app.volume['drum1']['oh'] = 0.4;
+		app.volume['drum1']['cc'] = 1.0;
+		app.volume['drum1']['rc'] = 1.0;
+
+
 		app.mute['drum1']  = false;
 
 		//Create Filters
@@ -102,9 +116,16 @@ var app = {
 		app.drums['drum1'] = [];
 		app.drums['drum1']['bd'] = [];
 		app.drums['drum1']['sd'] = [];
+		app.drums['drum1']['lt'] = [];
+		app.drums['drum1']['mt'] = [];
+		app.drums['drum1']['ht'] = [];
+		app.drums['drum1']['rs'] = [];
+		app.drums['drum1']['cp'] = [];
 		app.drums['drum1']['ch'] = [];
 		app.drums['drum1']['oh'] = [];
-		app.drums['drum1']['rs'] = [];
+		app.drums['drum1']['cc'] = [];
+		app.drums['drum1']['rc'] = [];
+		
 		
 		app.oscillator = [];
 
@@ -135,9 +156,16 @@ var app = {
 			//Set up drum patterns
 			app.drums['drum1']['bd'][i] = new Array(app.patternLength);
 			app.drums['drum1']['sd'][i] = new Array(app.patternLength);
+			app.drums['drum1']['lt'][i] = new Array(app.patternLength);
+			app.drums['drum1']['mt'][i] = new Array(app.patternLength);
+			app.drums['drum1']['ht'][i] = new Array(app.patternLength);
+			app.drums['drum1']['rs'][i] = new Array(app.patternLength);
+			app.drums['drum1']['cp'][i] = new Array(app.patternLength);
 			app.drums['drum1']['ch'][i] = new Array(app.patternLength);
 			app.drums['drum1']['oh'][i] = new Array(app.patternLength);
-			app.drums['drum1']['rs'][i] = new Array(app.patternLength);
+			app.drums['drum1']['cc'][i] = new Array(app.patternLength);
+			app.drums['drum1']['rc'][i] = new Array(app.patternLength);
+
 		}
 
 		app.loadSamples();
@@ -447,11 +475,21 @@ var app = {
 	//----------------------------------------------------
 
 
-	setControlKnob: function(instrument, controlName, value){
+	setControlKnob: function(instrument, controlName, value, drumName){
 		console.log('Instrument: ' + instrument);
 		console.log('Control: ' + controlName);
 		console.log('Value: ' + value);
 		console.log('-------------');
+
+		var drumname = drumName || false;
+
+		//Drum Controls
+		if(instrument === 'drum1'){
+			if(controlName == 'vol'){
+				app.volume['drum1'][drumName] = value / 100;
+			}
+			return;
+		}
 
 		var filter = app.filter[instrument];
 		var filter2 = app.filter2[instrument];
@@ -509,9 +547,16 @@ var app = {
 		var samplePaths = [];
 		samplePaths['bd']   = 'bd01.wav';
 		samplePaths['sd']   = 'sd10.wav';
+		samplePaths['lt']   = 'lt01.wav';
+		samplePaths['mt']   = 'mt01.wav';
+		samplePaths['ht']   = 'ht01.wav';
+		samplePaths['rs']   = 'rs01.wav';
+		samplePaths['cp']   = 'cp02.wav';
 		samplePaths['ch']   = 'hh01.wav';
 		samplePaths['oh']   = 'oh01.wav';
-		samplePaths['rs']   = 'rs01.wav';
+		samplePaths['cc']   = 'cr01.wav';
+		samplePaths['rc']   = 'rd02.wav';
+
 
 		loadSample = function(key, path){
 
@@ -644,7 +689,7 @@ var app = {
 				if( app.drums['drum1'][key][app.patternID['drum1']][i] ) {
 
 					app.gainNode['drum1'] = app.context.createGain();
-					app.gainNode['drum1'].gain.value = app.volume['drum1'];
+					app.gainNode['drum1'].gain.value = app.volume['drum1'][key];
 
 					var playSound = app.context.createBufferSource(); // Declare a New Sound
 					playSound.buffer = app.samples[key]; // Attatch our Audio Data as it's Buffer

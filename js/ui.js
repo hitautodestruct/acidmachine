@@ -2,13 +2,21 @@ var ui = {
 
 	patternID: [],
 
+	mouseDown: false,
+
 	init: function(){
+
+		//Disable highlighting of text etc
+		$(document).bind('selectstart dragstart', function(evt){ 
+			evt.preventDefault(); 
+			return false; 
+		});
 
 		var currentStep,clickedNote,octave;
 
 		octave = app.octave;
 
-		//Key Press - Play note - if not already playing 
+		//Key Press  
 		window.addEventListener("keydown", function(e){			
 			
 			var keyCode = (typeof e.which == "number") ? e.which : e.keyCode;
@@ -69,6 +77,13 @@ var ui = {
 			$(this).removeClass('btn-pushed');
 		});
 
+
+		//Detect and set var for mousedown - used for dragging across pads on drum machine		
+		$(document).mousedown(function() {
+		    ui.mouseDown = true;
+		}).mouseup(function() {
+		    ui.mouseDown = false;  
+		});
 
 		//Temp Mute functions------
 
@@ -145,20 +160,22 @@ var ui = {
    			'change' : function(v){
    				var value = v;
 
-   				//Get the input name (contains instrument name and control name)
+   				//Get the input name (contains instrument name)
    				var inputName = this.$.context.name;
 
    				inputName = inputName.split('_');
 
    				var instrumentName = inputName[0];
-   				var controlName = inputName[1];
+   				var drumName = inputName[1];
+   				var controlName = inputName[2];
 
-   				app.setControlKnob(instrumentName, controlName, value);
+   				app.setControlKnob(instrumentName, controlName, value, drumName);
    				
    			}
    			
 
    		});
+
 
    		//Create Sliders
 		$( ".js-instrument-vol-slider" ).slider({
@@ -360,17 +377,76 @@ var ui = {
 			if(app.sequencePlaying){
 				$(this).addClass('btn-pattern-waiting');
 			} else {
+				ui.updateDrumPads(patternNumber);
 				$('.js-pattern-select[data-instrument-name="' + instrumentName + '"]').removeClass('btn-note-highlight');
 				$(this).addClass('btn-note-highlight');
 				ui.updateStepValue(instrumentName,patternNumber,1);
-				ui.updateDrumPads(patternNumber);
 			}
 
 		});
 
-		
+		//Drum Pad Click
+		$('.js-drumpad').mousedown(function(){
+			ui.drumpadClick(this);
+		});
+
+		//Drum Pad drag over
+		$('.js-drumpad').mouseover(function(){
+			if(ui.mouseDown){
+				ui.drumpadClick(this);
+			}
+		});
+
+		//Update currently selected drum
+		$('.btn-drum-selector').click(function(){
+			
+			if( !$(this).hasClass('btn-drum-selector-highlight') ){
+				var instrument = $(this).data('instrument-name');
+				$('.btn-drum-selector').removeClass('btn-drum-selector-highlight');
+				$(this).addClass('btn-drum-selector-highlight');
+				app.selectedDrum[instrument] = $(this).data('drum-name');
+				ui.updateDrumPads(app.patternID['drum1']);
+			}
+
+		});
+
+		//Highlight initial drum selection
+		$('.btn-drum-selector[data-drum-name="' + app.selectedDrum['drum1'] + '"]').addClass('btn-drum-selector-highlight');
 		ui.updateDrumPads(app.patternID['drum1']);
 
+
+
+		//Update drum volume knobs
+		for(key in app.drums['drum1']){
+			ui.updateDrumVolKnob(key);
+		}	
+
+
+	},
+
+	//----------------------------------------------------
+
+	updateDrumVolKnob: function(key){
+		var value = app.volume['drum1'][key] * 100;
+		$('.dial-drum[name="drum1_' + key + '_vol"]').val(value).trigger('change');
+	},
+
+	//----------------------------------------------------
+
+	drumpadClick: function(that){
+
+		$(that).toggleClass('btn-drum-highlight-2');
+
+		//Update drum pattern
+		var instrument = $(that).data('instrument-name');
+		var selectedDrum = app.selectedDrum[instrument];
+		var step = $(that).data('drum-step');
+
+		if( $(that).hasClass('btn-drum-highlight-2') ){
+			app.drums[instrument][selectedDrum][app.patternID[instrument]][step] = true;
+		} else if (app.drums[instrument][selectedDrum][app.patternID[instrument]][step]){
+			app.drums[instrument][selectedDrum][app.patternID[instrument]][step] = false;
+		}
 
 	},
 
@@ -417,33 +493,33 @@ var ui = {
 
 			//If octave is different than main octave - highlight the relevant octave button
 			if(noteOctave > app.octave){
-				$('.js-octave-btn').removeClass('btn-note-highlight');
-				$('.js-octave-btn-up').addClass('btn-note-highlight');
+				$('.js-octave-btn[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
+				$('.js-octave-btn-up[data-instrument-name="' + instrument + '"]').addClass('btn-note-highlight');
 			} else if(noteOctave < app.octave){
-				$('.js-octave-btn').removeClass('btn-note-highlight');
-				$('.js-octave-btn-down').addClass('btn-note-highlight');
+				$('.js-octave-btn[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
+				$('.js-octave-btn-down[data-instrument-name="' + instrument + '"]').addClass('btn-note-highlight');
 			} else {
-				$('.js-octave-btn').removeClass('btn-note-highlight');
+				$('.js-octave-btn[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
 			}
 
 			//Remove octave from end
 			highlightNote = highlightNote.slice(0, -1); 
 			
 			highlightNote = highlightNote.replace('#','\\#');
-			$('.js-note').removeClass('btn-note-highlight');
+			$('.js-note[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
    			$('#' + instrument + '_' + highlightNote).toggleClass('btn-note-highlight');
 
 		} else {
-			$('.js-note').removeClass('btn-note-highlight');
-			$('.js-octave-btn').removeClass('btn-note-highlight');
+			$('.js-note[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
+			$('.js-octave-btn[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
 		}
 
 		//Set slide button
 		var slide = app.slides[instrument][patternID][currentStep-1];
 		if(slide){
-			$('.js-slide-btn').addClass('btn-note-highlight');
+			$('.js-slide-btn[data-instrument-name="' + instrument + '"]').addClass('btn-note-highlight');
 		} else {
-			$('.js-slide-btn').removeClass('btn-note-highlight');
+			$('.js-slide-btn[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
 		}
 
 	},
@@ -543,7 +619,10 @@ var ui = {
 		$('.js-pattern-select[data-instrument-name="' + instrumentName + '"]').removeClass('btn-note-highlight');
 		$('.js-pattern-select[data-instrument-name="' + instrumentName + '"]').removeClass('btn-pattern-waiting');
 		$('#pattern_' + instrumentName + '_' + patternID).addClass('btn-note-highlight');
-		ui.updateDrumPads(patternID);
+		
+		if(instrumentName === 'drum1') {
+			ui.updateDrumPads(patternID);
+		}
 	}
 
 
