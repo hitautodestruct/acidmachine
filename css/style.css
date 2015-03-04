@@ -3,7 +3,7 @@ body{
 	color:#111;
 	font-family:sans-serif;
 	font-size:14px;
-	padding:32px;
+	height:120%;
 }
 
 .ib {
@@ -489,6 +489,102 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f7a394', end
 	margin-right:0;
 }
 
+
+
+
+.sequencer {
+	background:#eee;
+	overflow:auto;
+	width:100%;
+	height:200px;
+	border-radius:2px;
+	padding-top:16px;
+	padding-right:32px;
+}
+
+.sequencer-table {
+table-layout:fixed;
+}
+
+.sequencer-table tr {
+	height:32px;
+}
+
+.sequencer-table td {
+
+}
+
+.sequencer-table-main td {
+	width:32px;
+	border-right:1px solid #222;
+}
+
+.sequencer-table-main tr{
+	border-bottom:1px solid #222;
+}
+
+.sequencer-table-main tr:last-child {
+	border-bottom:0;	
+}
+
+.sequencer-table-main {	
+	background: #0fb4e7;
+	background:#222;
+	width:100%;
+}
+
+.sequencer-table-titles {
+	width:100%;
+}
+
+.sequencer-table-titles td{
+	vertical-align: middle;
+	text-align:right;
+	border-bottom:1px solid #ccc;
+}
+
+.seq-block{
+	background:#444;
+}
+
+.sequencer-block {
+	border-radius:4px;
+	text-align:center;
+	vertical-align:middle;
+	color:white;
+	font-weight:bold;
+	cursor:default;
+}
+
+.sequencer-block-darken{
+	opacity: 0.7;
+}
+
+
+.btn-distortion{
+	width:12px;
+	height:14px;
+	padding:0;
+	margin-bottom:8px !important;
+}
+
+.mix-label{
+	font-size:12px;
+	margin-left:4px;
+	margin-bottom:4px;
+	color:#ccc;
+}
+
+.title-block label{
+	font-size:14px;
+}
+
+.title-block input {
+	background:transparent;
+	border:0;
+	font-size:28px;
+	color:red;
+}
 
 /*Slider*/
 .ui-slider{

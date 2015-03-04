@@ -1,9 +1,18 @@
 var app = {
 
-	tempo: 140,
+	tempo: 130,
 	octave: 2,
 
+	song: [],
+	songLength:32,
+	maxSongLength: 640,
+	songMode: false, 
+
 	context: null,
+	distortionNode: null,
+	distortionEnabled: [],
+	delayEnabled: [],
+
 	oscillator: [],
 	filter: [],
 
@@ -13,6 +22,10 @@ var app = {
 	filterParams: [], //To store decay, env.mod, accent values
 
 	cutoffTempStore: [],
+
+	//Delay / feedback
+    delay:null,
+    feedback:null,
 
 	gainNode: [],
 	frequency: 100,
@@ -34,8 +47,8 @@ var app = {
 	mute:[],
 	frequencies:[], //To store frequencies
 	
-	availableNotes: ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'], //All notes
-	//availableNotes: ['c','d#','f','g','a#','c'], //Minor pentatonic c
+	//availableNotes: ['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'], //All notes
+	availableNotes: ['c','d#','f','g','a#','c'], //Minor pentatonic c
 	
 	samples:[],
 
@@ -50,6 +63,8 @@ var app = {
 
 	testPattern:true, //Rebirth default pattern for testing
 
+	tuna:null,
+
 
 
 	//----------------------------------------------------
@@ -60,14 +75,61 @@ var app = {
 		//Create Context
 		app.context = new (window.AudioContext || window.webkitAudioContext)();
 
+		app.tuna = new Tuna(app.context);
+
+		//Delay / feedback
+	    app.delay = app.context.createDelay();
+        app.feedback = app.context.createGain();
+        app.delay.delayTime.value = (60000 / app.tempo) / 64 / 100 * 3;
+        //app.delay.delayTime.value = 0.20;
+
+        app.feedback.gain.value = 0.5;
+
+		
+		//Distortion -----
+		app.distortionNode = app.context.createWaveShaper();
+		
+		function makeDistortionCurve(amount) {
+		  	var k = typeof amount === 'number' ? amount : 50,
+		    n_samples = 44100,
+		    curve = new Float32Array(n_samples),
+		    deg = Math.PI / 180,
+		    i = 0,
+		    x;
+			for ( ; i < n_samples; ++i ) {
+				x = i * 2 / n_samples - 1;
+				curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+				//curve[i] = ( 500 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+			}
+		  	return curve;
+		};
+
+		app.distortionNode.curve = makeDistortionCurve(400);
+		app.distortionNode.oversample = '4x';
+
+		//-----------
+
+
+
+
+
+
 		//Volumes
+		app.gainNode['master'] = app.context.createGain();
+		app.gainNode['master'].gain.value = 0.6;
+
 		for(var i=1;i<=app.synthCount;i++){
 			app.volume['synth' + i] = 0.2;
 			app.mute['synth' + i] = false;
+
+			app.distortionEnabled['synth' + i] = false;
 		}
 
+		app.distortionEnabled['synth1'] = true;
+		app.delayEnabled['synth2'] = true;
+
 		app.volume['drum1'] = [];
-		app.volume['drum1']['master'] = 0.9;
+		app.volume['drum1']['master'] = 0.8;
 		app.volume['drum1']['bd'] = 1.0;
 		app.volume['drum1']['sd'] = 1.0;
 		app.volume['drum1']['lt'] = 1.0;
@@ -82,6 +144,9 @@ var app = {
 
 
 		app.mute['drum1']  = false;
+
+
+
 
 		//Create Filters
 		for(var i=1;i<=app.synthCount;i++){
@@ -100,7 +165,7 @@ var app = {
 			app.cutoffTempStore['synth' + i] = app.filter['synth' + i].frequency.value;
 
 			app.filterParams['synth' + i] = [];
-			app.filterParams['synth' + i]['decayTime'] = 40;
+			app.filterParams['synth' + i]['decayTime'] = 0.7;
 			app.filterParams['synth' + i]['decayAmount'] = 10000;
 
 			//Detune
@@ -225,6 +290,39 @@ var app = {
  		app.selectedDrum['drum1'] = 'bd';
 
 
+ 		//Init Song
+ 		for(var i=1;i<=app.synthCount;i++){
+ 			app.song['synth' + i] = new Array(app.maxSongLength);
+ 		}
+ 		app.song['drum1'] = new Array(app.maxSongLength);
+
+ 		//Test Song
+ 		app.song['drum1'][0] = 1;
+ 		app.song['drum1'][1] = 1;
+ 		app.song['drum1'][2] = 1;
+ 		app.song['drum1'][3] = 1;
+ 		app.song['drum1'][4] = 2;
+ 		app.song['drum1'][5] = 2;
+ 		app.song['drum1'][6] = 2;
+ 		app.song['drum1'][7] = 3;
+ 		app.song['drum1'][8] = 2;
+ 		app.song['drum1'][9] = 2;
+ 		app.song['drum1'][10] = 2;
+ 		app.song['drum1'][11] = 3;
+
+ 		app.song['synth1'][0] = 2;
+ 		app.song['synth1'][1] = 2;
+ 		app.song['synth1'][2] = 2;
+ 		app.song['synth1'][3] = 2;
+ 		app.song['synth1'][4] = 1;
+ 		app.song['synth1'][5] = 1;
+ 		app.song['synth1'][6] = 1;
+ 		app.song['synth1'][7] = 1;
+ 		app.song['synth1'][8] = 3;
+ 		app.song['synth1'][9] = 3;
+ 		app.song['synth1'][10] = 3;
+ 		app.song['synth1'][11] = 3;
+
 
  		if(app.testPattern){
  			app.setTestPattern();
@@ -238,10 +336,15 @@ var app = {
 
 	setTestPattern: function(){
 
-		app.notes['synth1'][1] = [null,'c3','c2','','c2',null,'c3',null,'c2','d2','d#2','c2',null,null,null,null];
-		app.slides['synth1'][1] = [null,null,null,true,true,false,false,false,false,true,true,false,false,false,true,true];
+		//app.notes['synth1'][1] = [null,'c3','c2','','c2',null,'c3',null,'c2','d2','d#2','c2',null,null,null,null];
+		//app.slides['synth1'][1] = [null,null,null,true,true,false,false,false,false,true,true,false,false,false,true,true];
+
+		app.notes['synth1'][1] = new Array(app.patternLength);
+		app.notes['synth1'][1][0] = 'c2';
+
 
 		app.notes['synth1'][2] = ['c2','c2','c2','c2','c2','c2','c3','c2','c2','c2','c2','c2','c2','c2','c2','c2'];
+
 
 		for(var i=0; i<16; i++){
 			app.frequencies['synth1'][1][i] = app.getFrequency(app.notes['synth1'][1][i]);
@@ -254,6 +357,32 @@ var app = {
 
 
 	},
+
+	//----------------------------------------------------
+
+	toggleDistortion: function(instrument){
+
+		if(app.distortionEnabled[instrument]){
+			app.distortionEnabled[instrument] = false;
+		} else {
+			app.distortionEnabled[instrument] = true;
+		}
+
+	},
+
+	//----------------------------------------------------
+
+	toggleDelay: function(instrument){
+
+		if(app.delayEnabled[instrument]){
+			app.delayEnabled[instrument] = false;
+		} else {
+			app.delayEnabled[instrument] = true;
+		}
+
+	},
+
+	//----------------------------------------------------
 
 	//Convert note to frequency
 	getFrequency: function(note){
@@ -307,7 +436,9 @@ var app = {
 	//----------------------------------------------------
 
 
-	playFrequency: function(instrument, freq, slide){
+	playFrequency: function(instrument, freq, slide,noteTime){
+
+		var volume = app.volume[instrument];
 
 		if(!isNaN(freq)){
 
@@ -316,49 +447,87 @@ var app = {
 					app.oscillator[instrument] = app.context.createOscillator();
 					app.gainNode[instrument] = app.context.createGain();
 
-					var delay = app.context.createDelay();
-
 					//Filter
 					app.oscillator[instrument].connect(app.filter[instrument]);
-					
-				    //delay.delayTime.value = 0.390;
-				    //app.gainNode.gain.value = 2;
+			    	app.filter[instrument].connect(app.filter2[instrument]);
 
-				    //Connect delay to gainNode - gainNode to Delay (create feedback)
-				    //delay.connect(app.gainNode);
-				    //app.gainNode.connect(delay);
+			    	//Distortion enabled?
+				    if(app.distortionEnabled[instrument]){
+				    	
+				    	//app.distortionNode.connect(app.gainNode[instrument]);
+				    	//app.filter2[instrument].connect(app.distortionNode);
 
-				    //app.filter[instrument].connect(delay);
+				    	var overdrive = new app.tuna.Overdrive({
+		                    outputGain: 0.5,         //0 to 1+
+		                    drive: 0.7,              //0 to 1
+		                    curveAmount: 1,          //0 to 1
+		                    algorithmIndex: 0,       //0 to 5, selects one of our drive algorithms
+		                    bypass: 0
+		                });
 
-				    if(app.filter2Active){
-				    	app.filter[instrument].connect(app.filter2[instrument]);
-				    	app.filter2[instrument].connect(app.gainNode[instrument]);
+		                app.filter2[instrument].connect(overdrive.input);
+		                overdrive.connect(app.gainNode[instrument]);
+
+				    	//Volume boost (synth volume is lower when distortion is active)
+				    	//if(app.volume[instrument] > 0.250) {
+				    		//volume = app.volume[instrument] + 0.250	;
+				    	//}
+
 				    } else {
-				    	app.filter[instrument].connect(app.gainNode[instrument]);
+				    	app.volume[instrument] = app.volume[instrument];
+				    	app.filter2[instrument].connect(app.gainNode[instrument]);
 				    }
 
 
-					app.gainNode[instrument].connect(app.context.destination)
+		            //Delay Connections
+		            if(app.delayEnabled[instrument]){
+		            	app.gainNode[instrument].connect(app.delay);	
+			            app.delay.connect(app.feedback);
+			            app.feedback.connect(app.delay);
+			            app.feedback.connect(app.gainNode['master']);	
+		            }
+
+		            //Connect instr to master
+		            app.gainNode[instrument].connect(app.gainNode['master']);
+				    app.gainNode['master'].connect(app.context.destination);
+
+				    
+				    
+
+
+					//var speed = 60000 / app.tempo / 8;
+					//delay.delayTime.value = speed;
+				    //app.gainNode[instrument].gain.value = 2;
+
+				    //Connect delay to gainNode - gainNode to Delay (create feedback)
+				    //delay.connect(app.gainNode[instrument]);
+				    //app.gainNode[instrument].connect(delay);
+
+					//app.gainNode[instrument].connect(app.context.destination)
+					
 					//app.gainNode.connect(app.context.destination);
 					//delay.connect(app.context.destination);
 
 					//Attack 
 					app.gainNode[instrument].gain.setValueAtTime(0,app.context.currentTime);
-					app.gainNode[instrument].gain.linearRampToValueAtTime(app.volume[instrument], app.context.currentTime + 0.01);
+					app.gainNode[instrument].gain.linearRampToValueAtTime(volume, app.context.currentTime + 0.01);
 
 					app.oscillator[instrument].type = app.waveform[instrument];
 				}
 
-				//Osc settings
-				//app.frequency[instrument] = freq;
+
+				//Fixes problem when creating a new random pattern half way through playing a note
+				if(!app.oscillator[instrument]){
+					return;
+				}
 				
 				
 				//Slide or just set frequency
 				if(slide){ 
-					var speed = 60000 / app.tempo / 4;
-					var slideTime = speed / 24  / 100;
-					//alert(slideTime);
-					app.oscillator[instrument].frequency.linearRampToValueAtTime(freq, app.context.currentTime + slideTime);
+					//var speed = 60000 / app.tempo / 4;
+					//var slideTime = speed / 24  / 100;
+					//app.oscillator[instrument].frequency.linearRampToValueAtTime(freq, app.context.currentTime + slideTime);
+					app.oscillator[instrument].frequency.value = freq;
 				} else {
 					app.oscillator[instrument].frequency.value = freq;
 				}
@@ -421,13 +590,17 @@ var app = {
 
 				app.oscillator[instrument].disconnect(app.filter[instrument]);
 
-				if(app.filter2Active){
-					app.filter2[instrument].disconnect(app.gainNode[instrument]);
-					app.filter[instrument].disconnect(app.filter2[instrument]);
-				} else {
-					app.filter[instrument].disconnect(app.gainNode[instrument]);	
-				}
+				app.filter2[instrument].disconnect(app.gainNode[instrument]);
+				app.filter[instrument].disconnect(app.filter2[instrument]);
 				
+
+				if(app.distortionEnabled[instrument]){
+			    	app.filter2[instrument].disconnect(app.distortionNode);	
+					app.distortionNode.disconnect(app.gainNode[instrument]);
+			    } else {
+			    	app.filter2[instrument].disconnect(app.gainNode[instrument]);
+			    }
+
 				//app.gainNode.connect(app.context.destination);
 
 				//console.log('Stopping ' + freq)
@@ -465,9 +638,10 @@ var app = {
 
 		if(instrument === 'drum1'){
 			value = value * 4 ;
+			app.volume[instrument]['master'] = value;
+		} else {
+			app.volume[instrument] = value
 		}
-
-		app.volume[instrument] = value
 
 	},
 
@@ -504,32 +678,22 @@ var app = {
 
 			var cutoffVal = value * 100;
 
-			if(app.filter2Active){
-				filter.frequency.value = cutoffVal;
-			 	filter2.frequency.value = cutoffVal;
-			} else {
-				filter.frequency.value = cutoffVal;
-			}
+			filter.frequency.value = cutoffVal;
+		 	filter2.frequency.value = cutoffVal;
 
-		//Copy of cutoff value - To use when playing note as filter decay will change cutoff - this value is used to reset it 
-		app.cutoffTempStore[instrument] = cutoffVal;
-
-		console.log(app.cutoffTempStore[instrument]);
+			//Copy of cutoff value - To use when playing note as filter decay will change cutoff - this value is used to reset it 
+			app.cutoffTempStore[instrument] = cutoffVal;
 
 		}
 
 		//Resonance
 		if(controlName == 'reso'){
-			if(app.filter2Active){
-				filter.Q.value = value / 8.5;
-				filter2.Q.value = value / 8.5;
-			} else {
-				filter.Q.value = value / 4.5;
-			}
+			filter.Q.value = value / 8.5;
+			filter2.Q.value = value / 8.5;
 		}
 
 		if(controlName == 'envmod'){
-			//app.filterParams[instrument]['decayAmount'] = value * 100;
+			app.filterParams[instrument]['decayAmount'] = value * 100;
 		}
 
 		if(controlName == 'decay'){
@@ -545,17 +709,17 @@ var app = {
 	loadSamples: function(){
 
 		var samplePaths = [];
-		samplePaths['bd']   = 'bd01.wav';
-		samplePaths['sd']   = 'sd10.wav';
-		samplePaths['lt']   = 'lt01.wav';
-		samplePaths['mt']   = 'mt01.wav';
-		samplePaths['ht']   = 'ht01.wav';
-		samplePaths['rs']   = 'rs01.wav';
-		samplePaths['cp']   = 'cp02.wav';
-		samplePaths['ch']   = 'hh01.wav';
-		samplePaths['oh']   = 'oh01.wav';
-		samplePaths['cc']   = 'cr01.wav';
-		samplePaths['rc']   = 'rd02.wav';
+		samplePaths['bd']   = 'bd01.mp3';
+		samplePaths['sd']   = 'sd10.mp3';
+		samplePaths['lt']   = 'lt01.mp3';
+		samplePaths['mt']   = 'mt01.mp3';
+		samplePaths['ht']   = 'ht01.mp3';
+		samplePaths['rs']   = 'rs01.mp3';
+		samplePaths['cp']   = 'cp02.mp3';
+		samplePaths['ch']   = 'hh01.mp3';
+		samplePaths['oh']   = 'oh01.mp3';
+		samplePaths['cc']   = 'cr01.mp3';
+		samplePaths['rc']   = 'rd02.mp3';
 
 
 		loadSample = function(key, path){
@@ -564,7 +728,7 @@ var app = {
 
 				app.samples[key]; // Create the Sound 
 				var getSound = new XMLHttpRequest(); // Load the Sound with XMLHttpRequest
-				getSound.open("GET", "samples/909/" + path, true); // Path to Audio File
+				getSound.open("GET", "samples/909/mp3/" + path, true); // Path to Audio File
 				getSound.responseType = "arraybuffer"; // Read as Binary Data
 				getSound.onload = function() {
 					app.context.decodeAudioData(getSound.response, function(buffer){
@@ -597,32 +761,66 @@ var app = {
 		}
 
 		app.sequencePlaying = true;
-		var speed = 60000 / app.tempo / 4;
+		
 		var i = 0;
+		var songBar = -1;
 
 		//Play a row, then call function again
 		function nextStep() {
 
-			//Check if current pattern has been changed
+			var speed = 60000 / app.tempo / 4;
+
+			//If song mode - change to the correct pattern for the bar
+			//Pattern mode - check if current pattern has been changed
 			if(i===0){
 
-				//Loop through the synths
-				for(var synthID=1; synthID<=app.synthCount; synthID++){
+				if(!app.songMode){
 
-					if( app.patternID['synth' + synthID] !== app.nextPattern['synth' + synthID] ){
-						app.patternID['synth' + synthID] = app.nextPattern['synth' + synthID];
-						ui.highlightPattern('synth' + synthID, app.patternID['synth' + synthID]);
-						ui.updateStepValue('synth' + synthID,app.patternID['synth' + synthID],1);
+					//Loop through the synths
+					for(var synthID=1; synthID<=app.synthCount; synthID++){
+
+						if( app.patternID['synth' + synthID] !== app.nextPattern['synth' + synthID] ){
+							app.patternID['synth' + synthID] = app.nextPattern['synth' + synthID];
+							ui.highlightPattern('synth' + synthID, app.patternID['synth' + synthID]);
+							ui.updateStepValue('synth' + synthID,app.patternID['synth' + synthID],1);
+						}
+
 					}
 
-				}
+					if( app.patternID['drum1'] !== app.nextPattern['drum1'] ){
+						app.patternID['drum1'] = app.nextPattern['drum1'];
+						ui.highlightPattern('drum1', app.patternID['drum1']);
+					}
 
-				if( app.patternID['drum1'] !== app.nextPattern['drum1'] ){
-					app.patternID['drum1'] = app.nextPattern['drum1'];
-					ui.highlightPattern('drum1', app.patternID['drum1']);
-				}
+				} else { 
+					//Song mode enabled
+
+					//Increase songBar counter
+					songBar++;						
+
+					//Loop through the synths - set pattern id's
+					for(var synthID=1; synthID<=app.synthCount; synthID++){
+						if(app.song['synth' + synthID][songBar]){
+							app.patternID['synth' + synthID] = app.song['synth' + synthID][songBar];
+							ui.highlightPattern('synth' + synthID, app.patternID['synth' + synthID]);
+							ui.updateStepValue('synth' + synthID, app.patternID['synth' + synthID],1);
+						}
+					}
+
+					if(app.song['drum1'][songBar]){
+						app.patternID['drum1'] = app.song['drum1'][songBar];
+						ui.highlightPattern('drum1', app.patternID['drum1']);
+					}
+
+					ui.highlightSongBlock(songBar);
+					
+
+				} //End Song mode check
 
 			} //End pattern change check
+
+
+
 
 			var previousFreq = [];
 			
@@ -639,16 +837,6 @@ var app = {
 			var currentFreq = [];
 			var slide = [];
 
-			//Loop through synths - set current freq and slide
-			for(var synthID=1; synthID<=app.synthCount; synthID++){
-				currentFreq['synth' + synthID] = app.frequencies['synth' + synthID][app.patternID['synth' + synthID]][i];
-				slide['synth' + synthID] = app.slides['synth' + synthID][app.patternID['synth' + synthID]][i];
-
-				if(!previousFreq['synth' + synthID] || i===0){
-					slide['synth' + synthID] = false;
-				}
-			}
-			
 			//Check if sequence has been stopped			    
 			if(!app.sequencePlaying){
 
@@ -662,45 +850,124 @@ var app = {
 		    	return;
 		    } 
 
-		    //Loop through synths
+			//Loop through synths
 			for(var synthID=1; synthID<=app.synthCount; synthID++){
 
-		    	//Stop previous note (if slide not activated)
-			    if(!slide['synth' + synthID]){
+				//If song mode is set - check that pattern is set for this block
+				if(app.songMode){
+
+					//Check synth pattern is set
+					if(app.song['synth' + synthID][songBar]){
+						var validPattern = true;
+					} else {
+						var validPattern = false;
+					}
+
+					//check drum pattern is set
+					if(app.song['drum1'][songBar]){
+						var validDrumPattern = true;
+					} else {
+						var validDrumPattern = false;
+					}
+
+
+				} else {
+					var validPattern = true;
+					var validDrumPattern = true;
+				}
+
+
+				if(validPattern){
+
+					//set current freq and slide
+					currentFreq['synth' + synthID] = app.frequencies['synth' + synthID][app.patternID['synth' + synthID]][i];
+					slide['synth' + synthID] = app.slides['synth' + synthID][app.patternID['synth' + synthID]][i];
+
+					if(!previousFreq['synth' + synthID] || i===0){
+						slide['synth' + synthID] = false;
+					}
+
+
+					//Stop previous note (if slide not activated)
+				    if(!slide['synth' + synthID]){
+				    	if(app.oscillator['synth' + synthID]){
+				    		console.log('Stopping ' + previousFreq['synth' + synthID] );
+			    			app.stopOscillator('synth' + synthID);
+				    	}
+				    }
+
+				    //Play current note
+			    	if(currentFreq['synth' + synthID]){
+			    		if(!app.mute['synth' + synthID]){
+			    			var noteTime = 0.5; //When to play the note
+			    			console.log('Playing ' + currentFreq['synth' + synthID] );
+			    			app.playFrequency('synth' + synthID, currentFreq['synth' + synthID], slide['synth' + synthID],noteTime);
+			    		}
+			    	}
+				
+				} else {
+
+					//Stop previous note (if slide not activated)
 			    	if(app.oscillator['synth' + synthID]){
 			    		console.log('Stopping ' + previousFreq['synth' + synthID] );
 		    			app.stopOscillator('synth' + synthID);
 			    	}
-			    }
 
-			    //Play current note
-		    	if(currentFreq['synth' + synthID]){
-		    		if(!app.mute['synth' + synthID]){
-		    			console.log('Playing ' + currentFreq['synth' + synthID] );
-		    			app.playFrequency('synth' + synthID, currentFreq['synth' + synthID], slide['synth' + synthID]);
-		    		}
-		    	}
+				}//End valid pattern check
+				
 
-		    }
+			}
 
 
 	    	//Drums
 			playSample = function(key){
 				if( app.drums['drum1'][key][app.patternID['drum1']][i] ) {
 
-					app.gainNode['drum1'] = app.context.createGain();
-					app.gainNode['drum1'].gain.value = app.volume['drum1'][key];
+					//Gain Nodes
+					app.gainNode['drum1'] = [];
+					app.gainNode['drum1']['master'] = app.context.createGain();
+					app.gainNode['drum1']['master'].gain.value = app.volume['drum1']['master'];
+					
+					app.gainNode['drum1'][key] = app.context.createGain();
 
 					var playSound = app.context.createBufferSource(); // Declare a New Sound
 					playSound.buffer = app.samples[key]; // Attatch our Audio Data as it's Buffer
-					playSound.connect(app.gainNode['drum1']);
-					app.gainNode['drum1'].connect(app.context.destination);  // Link the Sound to the Output
+					
+					//Set drum volume
+					playSound.connect(app.gainNode['drum1'][key]);
+					app.gainNode['drum1'][key].gain.value = app.volume['drum1'][key];
+
+					
+					
+					
+
+					//Distortion enabled?
+				    if(app.distortionEnabled['drum1']){
+				    	app.gainNode['drum1'][key].connect(app.distortionNode);
+				    	app.distortionNode.connect(app.gainNode['drum1']['master']);
+
+				    	//Volume boost (volume is lower when distortion is active)
+				    	var drumVolume = app.volume['drum1']['master'] - 0.3	;
+
+				    } else {
+				    	var drumVolume = app.volume['drum1']['master']
+				    	app.gainNode['drum1'][key].connect(app.gainNode['drum1']['master']);
+				    }
+
+				    app.gainNode['drum1']['master'].connect(app.gainNode['master']);
+					app.gainNode['master'].connect(app.context.destination);  // Link the Sound to the Output
+
+
+
+
+
+
 					playSound.start(0); // Play the Sound Immediately
 				}
 			}
 
 			//Play drum sounds if not muted
-			if(!app.mute['drum1']){
+			if(!app.mute['drum1'] && validDrumPattern){
 				//Loop through samples
 				for(key in app.samples){
 					playSample(key);

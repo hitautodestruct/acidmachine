@@ -1,5 +1,6 @@
 <?php
 $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
+$sequencerBarLimit = 640;
 ?>
 <html>
 <title>Audio Test</title>
@@ -17,10 +18,14 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 			
 						
 			<div class="col-xs-2 options transport-options container-padding">
-				<div class="btn ib" id="play_button">Play</div><div class="btn ib" id="stop_button">Stop</div>
+				<div class="btn ib" id="play_button">Play</div><!--
+			 --><div class="btn ib" id="stop_button">Stop</div>
 			</div>
 			<div class="col-xs-2 title-block">
-				<div class="" style="margin:0 !important;">130</div>
+				<div class="" style="margin:0 !important;">
+					<label>Tempo</label><br>
+					<input type="number" min="1" max="500" class="js-tempo" value="">
+				</div>
 			</div>
 			<div class="col-xs-6 title-block">
 				<span class="pull-right" style="padding-right:32px;">ACID MACHINE</span>
@@ -71,7 +76,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 							<div class="col-xs-2">
 								Tune
-								<input type="text" value="0" class="dial" name="synth<?=$synthID;?>_tune" data-min="-120" data-max="120">
+								<input type="text" value="<?=($synthID==2 ? '120' : '0');?>" class="dial" name="synth<?=$synthID;?>_tune" data-min="-120" data-max="120">
 							</div>
 
 							<div class="col-xs-2">
@@ -91,7 +96,7 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 							<div class="col-xs-2">
 								Decay
-								<input type="text" value="40" class="dial" name="synth<?=$synthID;?>_decay" data-min="8" data-max="50">
+								<input type="text" value="70" class="dial" name="synth<?=$synthID;?>_decay" data-min="10" data-max="70">
 							</div>
 
 							<div class="col-xs-2">
@@ -172,8 +177,11 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 
 			</div><!--End Synth <?=$synthID;?> Main-->
 
-			<div class="col-xs-2 vol-container">
-				<div data-instrument-name="synth<?=$synthID;?>" class="js-instrument-vol-slider"></div>
+			<div class="col-xs-2 vol-container" style="vertical-align:bottom;">
+				<div data-instrument-name="synth<?=$synthID;?>" class="js-instrument-dist-btn btn-synth ib btn-distortion"></div><span class="ib mix-label">Dist.</span><br>
+				<div data-instrument-name="synth<?=$synthID;?>" class="js-instrument-delay-btn btn-synth ib btn-distortion"></div><span class="ib mix-label">Delay</span><br>
+				<div data-instrument-name="synth<?=$synthID;?>" class="js-instrument-vol-slider ib"></div><span class="ib mix-label">Vol.</span>
+				
 			</div>
 
 		</div><!--End Row-->
@@ -259,58 +267,69 @@ $notes=explode(',','C,C#,D,D#,E,F,F#,G,G#,A,A#,B,C');
 			</div>
 			
 			<div class="col-xs-2">
-				<div data-instrument-name="drum1" class="js-instrument-vol-slider"></div>
+				<div data-instrument-name="drum1" class="btn-synth ib btn-distortion js-instrument-dist-btn"></div><span class="ib mix-label">Dist.</span><br>
+				<div data-instrument-name="drum1" class="js-instrument-vol-slider ib"></div><span class="ib mix-label">Vol.</span>
 			</div>
-		</div>
+		</div>		
 
 
-		<!--Note Storage Table-->
-		<div class="row" style="margin-top:32px;">
-			<div class="col-xs-2"></div>
-			<div class="col-xs-8">
-				<table class="channel-container">
-				
-					<thead>
+	<div class="spacer-vertical"></div>
+
+	<!--Sequencer-->
+	<div class="row" style="display:none;">
+		<div class="col-xs-12 sequencer instrument-shadow">
+			<div class="row">
+
+				<div class="col-xs-2" style="overflow:none;">
+					<table class="table sequencer-table sequencer-table-titles">
 						<tr>
-							<td class="channel-row-count"></td>
-							<td>CH 1</td>
-							<td>CH 2</td>
-							<td>CH 3</td>
-							<td>CH 4</td>
+							<td>303 Synth 1</td>
 						</tr>
-					</thead>
-					
-					<tbody class="js-channel-notes">
-						
-						<?php for($i=1;$i<=16;$i++) : 
 
-						$divide4 = '';
-						if(($i-1)%4 === 0){
-							$divide4 = ' divide4 ';
-						}
-
-						?>
-						<tr class="<?=$divide4;?>">
-							<td class="channel-row-count"><?=$i;?></td>
-							<td class="channel-note" id="<?=$i;?>-1"><input class="js-note-input" val="" id="r<?=$i;?>c1"></td>
-							<td class="channel-note" id="<?=$i;?>-2"><input class="js-note-input" val="" id="r<?=$i;?>c2"></td>
-							<td class="channel-note" id="<?=$i;?>-3"><input class="js-note-input" val="" id="r<?=$i;?>c3"></td>
-							<td class="channel-note" id="<?=$i;?>-4"><input class="js-note-input" val="" id="r<?=$i;?>c4"></td>
+						<tr>
+							<td>303 Synth 2</td>
 						</tr>
-						<?php endfor; ?>
 
-					</tbody>
-					
-				</table>
-			</div>
-		</div>
-		<!--End Note Storage Table-->
+						<tr>
+							<td>Drum Machine 1</td>
+						</tr>
+					</table>
+				</div>
+
+				<div class="col-xs-8" style="overflow:auto;padding-left:0;">
+					<table class="sequencer-table sequencer-table-main">
+						<tr>
+							<?php for($i=0;$i<$sequencerBarLimit;$i++) : ?>
+							<td id="seq_synth1_<?=$i;?>" class="seq-block js-seq-column-<?=$i;?> js-seq-block" data-song-bar="<?=$i;?>" data-instrument-name="synth1"></td>
+							<?php endfor;?>
+						</tr>
+
+						<tr>
+							<?php for($i=0;$i<$sequencerBarLimit;$i++) : ?>
+							<td id="seq_synth2_<?=$i;?>" class="seq-block js-seq-column-<?=$i;?> js-seq-block" data-song-bar="<?=$i;?>" data-instrument-name="synth2"></td>
+							<?php endfor;?>
+						</tr>
+
+						<tr>
+							<?php for($i=0;$i<$sequencerBarLimit;$i++) : ?>
+							<td id="seq_drum1_<?=$i;?>" class="seq-block js-seq-column-<?=$i;?> js-seq-block" data-song-bar="<?=$i;?>" data-instrument-name="drum1"></td>
+							<?php endfor;?>
+						</tr>
+					</table>
+				</div>
+
+
+			</div><!--End row-->
+		</div><!--End col-xs-12-->
+	</div><!--End Row-->
+	<!--End Sequencer-->
 
 
 	</div><!--End Main Container-->
 
 
 
+<script src="js/tuna.js"></script>
 <script src="js/jquery-2.1.3.min.js"></script>
 <script src="js/jquery_knob.js"></script>
 <script src="js/jquery-ui.min.js"></script>
