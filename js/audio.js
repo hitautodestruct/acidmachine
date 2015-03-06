@@ -30,6 +30,7 @@ var app = {
 	gainNode: [],
 	frequency: 100,
 	volume: [],
+	tempVolume: [], //To store old value when accenting a note
 	waveform: [],
 	detunePercentage: [],
 	keyCode: 1,
@@ -83,7 +84,7 @@ var app = {
         app.delay.delayTime.value = (60000 / app.tempo) / 64 / 100 * 3;
         //app.delay.delayTime.value = 0.20;
 
-        app.feedback.gain.value = 0.5;
+        app.feedback.gain.value = 0.4;
 
 		
 		//Distortion -----
@@ -120,6 +121,7 @@ var app = {
 
 		for(var i=1;i<=app.synthCount;i++){
 			app.volume['synth' + i] = 0.2;
+			app.tempVolume['synth' + i] = app.volume['synth' + i];
 			app.mute['synth' + i] = false;
 
 			app.distortionEnabled['synth' + i] = false;
@@ -167,6 +169,7 @@ var app = {
 			app.filterParams['synth' + i] = [];
 			app.filterParams['synth' + i]['decayTime'] = 0.7;
 			app.filterParams['synth' + i]['decayAmount'] = 10000;
+			app.filterParams['synth' + i]['accent'] = 60;
 
 			//Detune
 			app.detunePercentage['synth' + i] = 0;
@@ -176,6 +179,8 @@ var app = {
 			app.slides['synth' + i] = [];
 			app.accents['synth' + i] = [];
 		}
+
+		app.detunePercentage['synth2'] = 1200;
 
 		//Set up the drums array
 		app.drums['drum1'] = [];
@@ -240,9 +245,6 @@ var app = {
  		app.drums['drum1']['bd'][1][4] = true;
  		app.drums['drum1']['bd'][1][8] = true;
  		app.drums['drum1']['bd'][1][12] = true;
-
- 		//app.drums['drum1']['rs'][1][13] = true;
- 		//app.drums['drum1']['rs'][1][15] = true;
 
  		app.drums['drum1']['sd'][1][4] = true;
  		app.drums['drum1']['sd'][1][12] = true;
@@ -436,107 +438,57 @@ var app = {
 	//----------------------------------------------------
 
 
-	playFrequency: function(instrument, freq, slide,noteTime){
+	playFrequency: function(instrument, freq, slide, accent, noteTime){
 
-		var volume = app.volume[instrument];
+		//app.volume[instrument] = app.tempVolume[instrument];
 
 		if(!isNaN(freq)){
 
-				if(!slide){
+				//Set waveform and detune
+				app.oscillator[instrument].type = app.waveform[instrument];
+				app.oscillator[instrument].detune.value = app.detunePercentage[instrument]; // value in cents
 
-					app.oscillator[instrument] = app.context.createOscillator();
-					app.gainNode[instrument] = app.context.createGain();
+				//Slide or just set frequency
+				if(slide){ 
+					console.log('SLLLIIDDEE');
+					var speed = 60000 / app.tempo / 4;
+					var slideTime = speed / 24 / 100;
+					slideTime = 0.06;
+					app.oscillator[instrument].frequency.linearRampToValueAtTime(freq, app.context.currentTime + slideTime);
+				} else {
+					//Set freq
+					app.oscillator[instrument].frequency.setValueAtTime(freq,app.context.currentTime);
 
-					//Filter
-					app.oscillator[instrument].connect(app.filter[instrument]);
-			    	app.filter[instrument].connect(app.filter2[instrument]);
-
-			    	//Distortion enabled?
-				    if(app.distortionEnabled[instrument]){
-				    	
-				    	//app.distortionNode.connect(app.gainNode[instrument]);
-				    	//app.filter2[instrument].connect(app.distortionNode);
-
-				    	var overdrive = new app.tuna.Overdrive({
-		                    outputGain: 0.5,         //0 to 1+
-		                    drive: 0.7,              //0 to 1
-		                    curveAmount: 1,          //0 to 1
-		                    algorithmIndex: 0,       //0 to 5, selects one of our drive algorithms
-		                    bypass: 0
-		                });
-
-		                app.filter2[instrument].connect(overdrive.input);
-		                overdrive.connect(app.gainNode[instrument]);
-
-				    	//Volume boost (synth volume is lower when distortion is active)
-				    	//if(app.volume[instrument] > 0.250) {
-				    		//volume = app.volume[instrument] + 0.250	;
-				    	//}
-
-				    } else {
-				    	app.volume[instrument] = app.volume[instrument];
-				    	app.filter2[instrument].connect(app.gainNode[instrument]);
-				    }
-
-
-		            //Delay Connections
-		            if(app.delayEnabled[instrument]){
-		            	app.gainNode[instrument].connect(app.delay);	
-			            app.delay.connect(app.feedback);
-			            app.feedback.connect(app.delay);
-			            app.feedback.connect(app.gainNode['master']);	
-		            }
-
-		            //Connect instr to master
-		            app.gainNode[instrument].connect(app.gainNode['master']);
-				    app.gainNode['master'].connect(app.context.destination);
-
-				    
-				    
-
-
-					//var speed = 60000 / app.tempo / 8;
-					//delay.delayTime.value = speed;
-				    //app.gainNode[instrument].gain.value = 2;
-
-				    //Connect delay to gainNode - gainNode to Delay (create feedback)
-				    //delay.connect(app.gainNode[instrument]);
-				    //app.gainNode[instrument].connect(delay);
-
-					//app.gainNode[instrument].connect(app.context.destination)
-					
-					//app.gainNode.connect(app.context.destination);
-					//delay.connect(app.context.destination);
-
-					//Attack 
+					//Amp Attack!
 					app.gainNode[instrument].gain.setValueAtTime(0,app.context.currentTime);
-					app.gainNode[instrument].gain.linearRampToValueAtTime(volume, app.context.currentTime + 0.01);
-
-					app.oscillator[instrument].type = app.waveform[instrument];
+					app.gainNode[instrument].gain.linearRampToValueAtTime(app.volume[instrument], app.context.currentTime + 0.01);
 				}
 
+
+				/*
+				if(!slide){
+
+				    //Set volume and env decay for accented notes
+					app.tempVolume[instrument] = app.volume[instrument]; //Temp storage for volume value (to reset after accent)
+					if(accent && app.volume[instrument] > 0){
+						console.log('ACCENT ALERT!!! :D');
+						var volumeAddition = (app.filterParams[instrument]['accent'] / 100) / 4;
+						volumeAddition = volumeAddition * app.volume[instrument] * 3.2;
+						console.log(volumeAddition);
+
+						app.volume[instrument] = app.volume[instrument] + volumeAddition;
+					}
+					
+				}
+				*/
 
 				//Fixes problem when creating a new random pattern half way through playing a note
 				if(!app.oscillator[instrument]){
 					return;
 				}
+								
 				
-				
-				//Slide or just set frequency
-				if(slide){ 
-					//var speed = 60000 / app.tempo / 4;
-					//var slideTime = speed / 24  / 100;
-					//app.oscillator[instrument].frequency.linearRampToValueAtTime(freq, app.context.currentTime + slideTime);
-					app.oscillator[instrument].frequency.value = freq;
-				} else {
-					app.oscillator[instrument].frequency.value = freq;
-				}
-				
-				
-				app.oscillator[instrument].detune.value = app.detunePercentage[instrument]; // value in cents
-				
-				
-				//Filter decay test---------------------
+				//Filter decay
 					app.filter[instrument].frequency.cancelScheduledValues(app.context.currentTime);
 					app.filter2[instrument].frequency.cancelScheduledValues(app.context.currentTime);
 
@@ -546,31 +498,47 @@ var app = {
 
 					var filterDecayAmount = app.filterParams[instrument]['decayAmount'];
 					var filterDecayTime = app.filterParams[instrument]['decayTime'];
+					var newFilterCutoff = 100;
 
-					//var newFilterCutoff = app.cutoffTempStore[instrument] - filterDecayAmount;
-					var newFilterCutoff = 0; 
+					//ACCENT
+					if(accent){ 
+						console.log('ACCENT ALERT!');
+						
+						//Set Min decay
+						newFilterDecayTime = ( 75 - app.filterParams[instrument]['accent'] ) / 100;
+						if(newFilterDecayTime < filterDecayTime){
+							filterDecayTime = newFilterDecayTime;
+						}
 
-					//Min value for cutoff
-					if(newFilterCutoff < 100){
-					//	newFilterCutoff = 100;
+						//Cutoff Wow-------------------------
+							var riseTime = (app.filterParams[instrument]['accent'] - 10) * 2 / 10000;
+							var wowHigh = app.filter2[instrument].frequency.value + 200;
+							
+							//Cut Drop
+							app.filter[instrument].frequency.setValueAtTime(newFilterCutoff, app.context.currentTime);
+							app.filter2[instrument].frequency.setValueAtTime(newFilterCutoff, app.context.currentTime);
+
+							//Fast rise
+							app.filter[instrument].frequency.linearRampToValueAtTime(wowHigh, app.context.currentTime + riseTime);
+							app.filter2[instrument].frequency.linearRampToValueAtTime(wowHigh, app.context.currentTime + riseTime);
+
+							//Drop
+							app.filter[instrument].frequency.linearRampToValueAtTime(newFilterCutoff, app.context.currentTime + riseTime + filterDecayTime);
+							app.filter2[instrument].frequency.linearRampToValueAtTime(newFilterCutoff, app.context.currentTime + riseTime + filterDecayTime);
+						//End Cutoff Wow---------------------
+
+						
+					} else {  //No accent
+
+						app.filter[instrument].frequency.setValueAtTime(app.cutoffTempStore[instrument], app.context.currentTime);
+						app.filter2[instrument].frequency.setValueAtTime(app.cutoffTempStore[instrument], app.context.currentTime);
+						app.filter[instrument].frequency.linearRampToValueAtTime(newFilterCutoff, app.context.currentTime + filterDecayTime);
+						app.filter2[instrument].frequency.linearRampToValueAtTime(newFilterCutoff, app.context.currentTime + filterDecayTime);
+
 					}
-
-					//console.log('Temp: ' + app.cutoffTempStore[instrument] + ' --- Filter: ' + app.filter[instrument].frequency.value);
-					//console.log(app.filter[instrument].frequency.value + ' - ' + newFilterCutoff);
 					
-					app.filter[instrument].frequency.setValueAtTime(app.cutoffTempStore[instrument], app.context.currentTime);
-					app.filter2[instrument].frequency.setValueAtTime(app.cutoffTempStore[instrument], app.context.currentTime);
-
-					app.filter[instrument].frequency.linearRampToValueAtTime(newFilterCutoff, app.context.currentTime + filterDecayTime);
-					app.filter2[instrument].frequency.linearRampToValueAtTime(newFilterCutoff, app.context.currentTime + filterDecayTime);
-				//End filter decay test-------------------
-
-
-				//Start osc - if slide not active
-				if(!slide){
-					app.oscillator[instrument].start();
-				}
-
+					
+				//End filter decay
 
 				//console.log('Playing ' + freq);
 				//console.log(app.oscillator);
@@ -588,27 +556,17 @@ var app = {
 
 		if(app.oscillator[instrument]){
 
-				app.oscillator[instrument].disconnect(app.filter[instrument]);
+				//app.oscillator[instrument].disconnect(app.filter[instrument]);
 
-				app.filter2[instrument].disconnect(app.gainNode[instrument]);
-				app.filter[instrument].disconnect(app.filter2[instrument]);
+				//app.filter2[instrument].disconnect(app.gainNode[instrument]);
+				//app.filter[instrument].disconnect(app.filter2[instrument]);
+
+				////app.gainNode[instrument].gain.linearRampToValueAtTime(0, app.context.currentTime + 0.05);
+
+				//app.volume[instrument] = app.tempVolume[instrument]; //reset volume (could be changed by accent)
 				
-
-				if(app.distortionEnabled[instrument]){
-			    	app.filter2[instrument].disconnect(app.distortionNode);	
-					app.distortionNode.disconnect(app.gainNode[instrument]);
-			    } else {
-			    	app.filter2[instrument].disconnect(app.gainNode[instrument]);
-			    }
-
-				//app.gainNode.connect(app.context.destination);
-
-				//console.log('Stopping ' + freq)
-				//app.gainNode.gain.setValueAtTime(0,app.context.currentTime);
-				app.gainNode[instrument].gain.linearRampToValueAtTime(0, app.context.currentTime + 0.05);
-				
-				//app.oscillator[instrument].stop();
-				delete app.oscillator[instrument];
+				app.oscillator[instrument].stop();
+				//delete app.oscillator[instrument];
 
 		}
 
@@ -636,11 +594,14 @@ var app = {
 
 		value = value / 100;
 
+		console.log(value);
+
 		if(instrument === 'drum1'){
 			value = value * 4 ;
 			app.volume[instrument]['master'] = value;
+			app.tempVolume[instrument]['master'] = value;
 		} else {
-			app.volume[instrument] = value
+			app.tempVolume[instrument] = value;
 		}
 
 	},
@@ -700,10 +661,70 @@ var app = {
 			app.filterParams[instrument]['decayTime'] = value / 100;
 		}
 
+		if(controlName == 'accent'){
+			app.filterParams[instrument]['accent'] = value;
+		}
+
 	},
 
 
 	//----------------------------------------------------
+
+	connectNodes: function(instrument){
+
+		app.oscillator[instrument] = app.context.createOscillator();
+		app.gainNode[instrument] = app.context.createGain();
+
+		//Filter
+		app.oscillator[instrument].connect(app.filter[instrument]);
+    	app.filter[instrument].connect(app.filter2[instrument]);
+
+    	//Distortion enabled?
+	    if(app.distortionEnabled[instrument]){
+
+	    	var overdrive = new app.tuna.Overdrive({
+                outputGain: 0.5,         //0 to 1+
+                drive: 0.7,              //0 to 1
+                curveAmount: 1,          //0 to 1
+                algorithmIndex: 3,       //0 to 5, selects one of our drive algorithms
+                bypass: 0
+            });
+
+            app.filter2[instrument].connect(overdrive.input);
+            overdrive.connect(app.gainNode[instrument]);
+
+	    } else {
+	    	app.volume[instrument] = app.volume[instrument];
+	    	app.filter2[instrument].connect(app.gainNode[instrument]);
+	    }
+
+
+        //Delay Connections
+        if(app.delayEnabled[instrument]){
+        	app.gainNode[instrument].connect(app.delay);	
+            app.delay.connect(app.feedback);
+            app.feedback.connect(app.delay);
+            app.feedback.connect(app.gainNode['master']);	
+        }
+
+        //Set instr to 0 volume and connect to master
+        app.gainNode[instrument].gain.value = 0;
+        app.gainNode[instrument].connect(app.gainNode['master']);
+
+        app.gainNode['master'].connect(app.context.destination);
+
+	},
+
+	disconnectNodes: function(instrument){
+
+		//app.gainNode['master'].disconnect(app.gainNode[instrument]);
+
+		app.gainNode[instrument].disconnect(app.filter2[instrument]);
+		app.filter2[instrument].disconnect(app.filter[instrument]);
+
+		app.filter[instrument].disconnect(app.oscillator[instrument]);
+
+	},
 
 	
 	loadSamples: function(){
@@ -765,7 +786,20 @@ var app = {
 		var i = 0;
 		var songBar = -1;
 
-		//Play a row, then call function again
+		//Create synth oscillators and connections then start oscillators
+		for(var synthID=1; synthID<=app.synthCount; synthID++){
+
+			var instrument = 'synth' + synthID;
+
+			app.connectNodes(instrument);
+			
+
+			app.oscillator[instrument].start();
+
+		} //End osc and connections creator
+
+
+		//Play a step, then call function again
 		function nextStep() {
 
 			var speed = 60000 / app.tempo / 4;
@@ -819,32 +853,17 @@ var app = {
 
 			} //End pattern change check
 
-
-
-
-			var previousFreq = [];
-			
-			if(i>0){
-				for(var synthID=1; synthID<=app.synthCount; synthID++){
-					previousFreq['synth' + synthID] = app.frequencies['synth' + synthID][app.patternID['synth' + synthID]][i-1];
-				}
-			} else {
-				for(var synthID=1; synthID<=app.synthCount; synthID++){
-					previousFreq['synth' + synthID] = app.frequencies['synth' + synthID][app.patternID['synth' + synthID]][app.patternLength-1];
-				}
-			}
 			
 			var currentFreq = [];
 			var slide = [];
+			var accent = [];
 
 			//Check if sequence has been stopped			    
 			if(!app.sequencePlaying){
 
 				//Stop all synths
 				for(var synthID=1; synthID<=app.synthCount; synthID++){
-			    	if(previousFreq['synth' + synthID]){
-				    	app.stopOscillator('synth' + synthID);
-				    }
+				    app.stopOscillator('synth' + synthID);
 				}
 
 		    	return;
@@ -882,36 +901,29 @@ var app = {
 					//set current freq and slide
 					currentFreq['synth' + synthID] = app.frequencies['synth' + synthID][app.patternID['synth' + synthID]][i];
 					slide['synth' + synthID] = app.slides['synth' + synthID][app.patternID['synth' + synthID]][i];
+					accent['synth' + synthID] = app.accents['synth' + synthID][app.patternID['synth' + synthID]][i];
 
-					if(!previousFreq['synth' + synthID] || i===0){
+					//No slides for first note
+					if(i===0){
 						slide['synth' + synthID] = false;
 					}
-
-
-					//Stop previous note (if slide not activated)
-				    if(!slide['synth' + synthID]){
-				    	if(app.oscillator['synth' + synthID]){
-				    		console.log('Stopping ' + previousFreq['synth' + synthID] );
-			    			app.stopOscillator('synth' + synthID);
-				    	}
-				    }
 
 				    //Play current note
 			    	if(currentFreq['synth' + synthID]){
 			    		if(!app.mute['synth' + synthID]){
-			    			var noteTime = 0.5; //When to play the note
+			    			var noteTime = 0.0; //When to play the note
 			    			console.log('Playing ' + currentFreq['synth' + synthID] );
-			    			app.playFrequency('synth' + synthID, currentFreq['synth' + synthID], slide['synth' + synthID],noteTime);
+			    			app.playFrequency('synth' + synthID, currentFreq['synth' + synthID], slide['synth' + synthID], accent['synth' + synthID], noteTime);
 			    		}
+			    	} else {
+			    		//No note here so cut volume
+			    		app.gainNode['synth' + synthID].gain.setValueAtTime(0,app.context.currentTime);
 			    	}
 				
 				} else {
 
-					//Stop previous note (if slide not activated)
-			    	if(app.oscillator['synth' + synthID]){
-			    		console.log('Stopping ' + previousFreq['synth' + synthID] );
-		    			app.stopOscillator('synth' + synthID);
-			    	}
+					//Not a valid pattern - Set synth's vol to 0
+					app.volume[instrument] = 0;
 
 				}//End valid pattern check
 				
@@ -1006,12 +1018,12 @@ var app = {
 		app.sequencePlaying = false;
 		//console.log('stopped');
 
-		//Stop Synth1
+		//Stop Synths
 		for(var synthID=1; synthID<=app.synthCount; synthID++){
-			if(app.oscillator['synth' + synthID]){
-				app.oscillator['synth' + synthID].stop();
-				delete app.oscillator['synth' + synthID];
-			}
+				var instrument = 'synth' + synthID;
+				app.disconnectNodes(instrument);
+				app.oscillator[instrument].stop();
+				delete app.oscillator[instrument];
 		}
 
 		//Stop Drums

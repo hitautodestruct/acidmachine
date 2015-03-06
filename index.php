@@ -101,7 +101,7 @@ $sequencerBarLimit = 640;
 
 							<div class="col-xs-2">
 								Accent
-								<input type="text" value="0" class="dial" name="synth<?=$synthID;?>_accent" data-min="0" data-max="100">
+								<input type="text" value="60" class="dial" name="synth<?=$synthID;?>_accent" data-min="10" data-max="60" >
 							</div>
 
 						</div>
@@ -166,7 +166,7 @@ $sequencerBarLimit = 640;
 							</div>
 
 							<div class="synth-octave-container col-xs-6 ib" style="">
-								<div class="btn-synth btn-note tiny-text ib" data-instrument-name="synth<?=$synthID;?>">AC</div><?php
+								<div class="btn-synth btn-note tiny-text js-accent-btn ib" data-instrument-name="synth<?=$synthID;?>">AC</div><?php
 								?><div class="btn-synth btn-note tiny-text js-slide-btn ib" data-instrument-name="synth<?=$synthID;?>">SL</div>
 							</div>
 						</div>

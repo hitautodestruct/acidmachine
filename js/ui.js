@@ -365,6 +365,25 @@ var ui = {
 
 		});
 
+		//Accent button
+		$('.js-accent-btn').click(function(){
+			$(this).toggleClass('btn-note-highlight');
+			var instrumentName = $(this).data('instrument-name');
+			var currentStep = $('#' + instrumentName + '_step').html();
+
+			var accent = false;
+			
+			if( $(this).hasClass('btn-note-highlight') ){
+				var accent = true;
+			}
+
+			//Update slides array
+			app.accents[instrumentName][app.patternID[instrumentName]][currentStep-1] = accent;
+
+			console.log(app.accents);
+
+		});
+
 
 		//Pattern select
 		$('.js-pattern-select').click(function(){
@@ -639,6 +658,14 @@ var ui = {
 			$('.js-slide-btn[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
 		}
 
+		//Set accent button
+		var accent = app.accents[instrument][patternID][currentStep-1];
+		if(accent){
+			$('.js-accent-btn[data-instrument-name="' + instrument + '"]').addClass('btn-note-highlight');
+		} else {
+			$('.js-accent-btn[data-instrument-name="' + instrument + '"]').removeClass('btn-note-highlight');
+		}
+
 	},
 
 	//----------------------------------------------------
@@ -709,6 +736,14 @@ var ui = {
 				} 
 
 				app.slides[instrument][app.patternID[instrument]][i] = slide;
+
+				//Randomise Accent
+				var accentRand = Math.floor( Math.random() * 10 );
+				var accent = false; 
+				if(accentRand < 3){
+					accent = true;
+				} 
+				app.accents[instrument][app.patternID[instrument]][i] = accent;
 
 				app.notes[instrument][app.patternID[instrument]][i] = randomNotes[i] + noteOctave;
 				app.frequencies[instrument][app.patternID[instrument]][i] = app.getFrequency(randomNotes[i]+noteOctave);	
